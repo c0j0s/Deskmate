@@ -9,6 +9,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.Message;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -38,6 +39,8 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ai.api.AIConfiguration;
 import ai.api.AIDataService;
@@ -71,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
 
     // Hotword Variables detect toggle
     private boolean shouldDetect;
+    private boolean session = false;
+    private boolean keepSession = false;
     private SnowboyDetect snowboyDetect;
 
 
@@ -96,12 +101,17 @@ public class MainActivity extends AppCompatActivity {
         startHotword();
     }
 
+    /*==============================================================================================
+        Setting up
+     */
+
+    // setup views
     private void setupViews() {
         // TODO: Setup Views
         textView = findViewById(R.id.tv_status);
         button = findViewById(R.id.btn_start_asr);
         messageAdapter = new MessageAdapter(this);
-        messagesView = (ListView) findViewById(R.id.messages_view);
+        messagesView = findViewById(R.id.messages_view);
         messagesView.setAdapter(messageAdapter);
 
         button.setOnClickListener(new View.OnClickListener() {
@@ -129,7 +139,23 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(broadcastReceiver, intentFilter);
     }
 
-    // xiao bai Asr setting
+    // setup hotword
+    private void setupHotword() {
+        shouldDetect = false;
+        SnowboyUtils.copyAssets(this);
+
+        // TODO: Setup Model File
+        File snowboyDirectory = SnowboyUtils.getSnowboyDirectory();
+        File model = new File(snowboyDirectory, "alexa_02092017.umdl");
+        File common = new File(snowboyDirectory, "common.res");
+
+        // TODO: Set Sensitivity
+        snowboyDetect = new SnowboyDetect(common.getAbsolutePath(), model.getAbsolutePath());
+        snowboyDetect.setSensitivity("0.60");
+        snowboyDetect.applyFrontend(true);
+    }
+
+    // hotword trigger asr
     private void setupAsr() {
         // TODO: Setup ASR
         // init speechRecogniser
@@ -168,6 +194,11 @@ public class MainActivity extends AppCompatActivity {
             //ON ERROR OCCUR
             @Override
             public void onError(int error) {
+                /*
+                4: network error
+                7: No recognition
+                8: busy
+                 */
                 Log.e("asr", "Errors" + Integer.toString(error));
                 textView.setText("Errors" + Integer.toString(error));
                 startHotword();
@@ -176,7 +207,6 @@ public class MainActivity extends AppCompatActivity {
             //ON RESULT RECEIVE
             @Override
             public void onResults(Bundle results) {
-                textView.setText("Thinking");
                 //Result return as List object
                 List<String> texts = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
@@ -211,55 +241,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void startAsr() {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                // TODO: Set Language
-                final Intent recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en");
-                recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en");
-                recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
-                recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
-                recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
-
-                // Stop hotword detection in case it is still running
-                shouldDetect = false;
-
-                // TODO: Start ASR
-                speechRecognizer.startListening(recognizerIntent);
-
-            }
-        };
-        Threadings.runInMainThread(this, runnable);
-    }
-
-    private void setupTts() {
-        // TODO: Setup TTS
-        // language configuration to set after initialisation
-        textToSpeech = new TextToSpeech(this, null);
-    }
-
-    private void startTts(String text) {
-        // TODO: Start TTS
-        textToSpeech.speak(text, textToSpeech.QUEUE_FLUSH,null);
-        // TODO: Wait for end and start hotword
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                while (textToSpeech.isSpeaking()) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        Log.e("tts", e.getMessage(), e);
-                    }
-                }
-                startHotword();
-            }
-        };
-        Threadings.runInBackgroundThread(runnable);
-    }
-
+    // asr link to nlu and trigger tts
     private void setupNlu() {
         // TODO: Change Client Access Token
         String clientAccessToken = "6e799814649e490d9f0b3bd839c05a49";
@@ -268,54 +250,25 @@ public class MainActivity extends AppCompatActivity {
         aiDataService = new AIDataService(aiConfiguration);
     }
 
-    private void startNlu(final String text) {
-        // TODO: Start NLU
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                AIRequest aiRequest = new AIRequest();
-                aiRequest.setQuery(text);
-
-                try {
-                    AIResponse aiResponse = aiDataService.request(aiRequest);
-                    Result result = aiResponse.getResult();
-                    Fulfillment fulfillment =  result.getFulfillment();
-                    String speech = fulfillment.getSpeech();
-
-                    final com.nyp.sit.deskmate.Message message = new com.nyp.sit.deskmate.Message(speech,0);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            messageAdapter.add(message);
-                            messagesView.setSelection(messagesView.getCount() - 1);
-                        }
-                    });
-
-                    startTts(speech);
-                } catch (AIServiceException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        Threadings.runInBackgroundThread(runnable);
+    //tts speaks nlu result
+    private void setupTts() {
+        // TODO: Setup TTS
+        // language configuration to set after initialisation
+        textToSpeech = new TextToSpeech(this, null);
     }
 
-    private void setupHotword() {
-        shouldDetect = false;
-        SnowboyUtils.copyAssets(this);
-
-        // TODO: Setup Model File
-        File snowboyDirectory = SnowboyUtils.getSnowboyDirectory();
-        File model = new File(snowboyDirectory, "alexa_02092017.umdl");
-        File common = new File(snowboyDirectory, "common.res");
-
-        // TODO: Set Sensitivity
-        snowboyDetect = new SnowboyDetect(common.getAbsolutePath(), model.getAbsolutePath());
-        snowboyDetect.setSensitivity("0.60");
-        snowboyDetect.applyFrontend(true);
-    }
+    /*==============================================================================================
+        Interaction Methods
+     */
 
     private void startHotword() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText("Listening for Alexa");
+            }
+        });
+
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -358,11 +311,133 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("hotword", "stop listening to hotword");
 
                 // TODO: Add action after hotword is detected
+                //startSessionTracking();
                 startAsr();
             }
         };
         Threadings.runInBackgroundThread(runnable);
     }
+
+    private void startAsr() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText("Listening to you");
+            }
+        });
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                // TODO: Set Language
+                final Intent recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en");
+                recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en");
+                recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
+                recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+                recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+
+                // Stop hotword detection in case it is still running
+                shouldDetect = false;
+
+                // TODO: Start ASR
+                speechRecognizer.startListening(recognizerIntent);
+
+            }
+        };
+
+        Threadings.runInMainThread(this, runnable);
+    }
+
+    private void startNlu(final String text) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText("Processing what you said");
+            }
+        });
+        // TODO: Start NLU
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                AIRequest aiRequest = new AIRequest();
+                aiRequest.setQuery(text);
+
+                try {
+                    AIResponse aiResponse = aiDataService.request(aiRequest);
+                    Result result = aiResponse.getResult();
+                    Fulfillment fulfillment =  result.getFulfillment();
+                    String speech = fulfillment.getSpeech();
+
+                    if (speech.equalsIgnoreCase("end_session")){
+                        keepSession=false;
+                        startTts("OK, wake me again if you need me.");
+                    }else {
+                        keepSession=true;
+                        startTts(speech);
+                    }
+                } catch (AIServiceException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        Threadings.runInBackgroundThread(runnable);
+    }
+
+    private void startTts(String text) {
+        final com.nyp.sit.deskmate.Message message = new com.nyp.sit.deskmate.Message(text,0);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                messageAdapter.add(message);
+                messagesView.setSelection(messagesView.getCount() - 1);
+                textView.setText("Replying");
+            }
+        });
+        // TODO: Start TTS
+        textToSpeech.speak(text, textToSpeech.QUEUE_FLUSH,null);
+        // TODO: Wait for end and start hotword
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                while (textToSpeech.isSpeaking()) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Log.e("tts", e.getMessage(), e);
+                    }
+                }
+
+                shallContinueConversation();
+            }
+        };
+        Threadings.runInBackgroundThread(runnable);
+    }
+
+    /*==============================================================================================
+        Other Methods
+     */
+
+    private void shallContinueConversation(){
+        //if keep session, continue asr, else wait 5s and end session, start hotword detection
+        if(keepSession){
+            startAsr();
+        }else{
+            //ending session
+            startHotword();
+
+        }
+    }
+
+//            new Timer().schedule(
+//                    new TimerTask() {
+//                        @Override
+//                        public void run() {
+//
+//                        }
+//                    },
+//                    5000
+//            );
 
 //    private String getWeather() {
 //        // TODO: (Optional) Get Weather Data via REST API
