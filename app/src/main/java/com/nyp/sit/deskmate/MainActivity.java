@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -58,7 +59,7 @@ import static java.lang.Boolean.TRUE;
 
 public class MainActivity extends AppCompatActivity {
     // View Variables
-    private Button button;
+    private Button startAsrButton;
     private TextView textView;
     private ListView messagesView;
     private MessageAdapter messageAdapter;
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Hotword Variables detect toggle
     private boolean shouldDetect;
-    private boolean session = false;
+    private boolean asrStart = false;
     private boolean keepSession = false;
     private SnowboyDetect snowboyDetect;
 
@@ -109,15 +110,49 @@ public class MainActivity extends AppCompatActivity {
     private void setupViews() {
         // TODO: Setup Views
         textView = findViewById(R.id.tv_status);
-        button = findViewById(R.id.btn_start_asr);
+        startAsrButton = findViewById(R.id.btn_start_asr);
+
         messageAdapter = new MessageAdapter(this);
         messagesView = findViewById(R.id.messages_view);
         messagesView.setAdapter(messageAdapter);
 
-        button.setOnClickListener(new View.OnClickListener() {
+        startAsrButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                shouldDetect = false;
+                if (!asrStart) {
+                    toggleButton(true);
+                    asrStart = true;
+                    shouldDetect = false;
+                    startAsr();
+                }else{
+                    toggleButton(false);
+                    asrStart = false;
+                    shouldDetect = true;
+                    speechRecognizer.cancel();
+                    speechRecognizer.stopListening();
+                    new Timer().schedule(
+                            new TimerTask() {
+                                @Override
+                                public void run() {
+                                    startHotword();
+                                }
+                            },
+                            500
+                    );
+                }
+            }
+        });
+
+    }
+    private void toggleButton(final boolean listening){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (listening) {
+                    startAsrButton.setText("Cancel");
+                }else{
+                    startAsrButton.setText("Listen");
+                }
             }
         });
     }
@@ -151,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
 
         // TODO: Set Sensitivity
         snowboyDetect = new SnowboyDetect(common.getAbsolutePath(), model.getAbsolutePath());
-        snowboyDetect.setSensitivity("0.60");
+        snowboyDetect.setSensitivity("0.40");
         snowboyDetect.applyFrontend(true);
     }
 
@@ -160,7 +195,6 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Setup ASR
         // init speechRecogniser
         speechRecognizer = speechRecognizer.createSpeechRecognizer(this);
-
         // init listener states
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
@@ -201,7 +235,24 @@ public class MainActivity extends AppCompatActivity {
                  */
                 Log.e("asr", "Errors" + Integer.toString(error));
                 textView.setText("Errors" + Integer.toString(error));
-                startHotword();
+                keepSession = false;
+                if (error == 7) {
+                    startTts("Can't recognise what you said");
+                }else if(error == 4){
+                    //startTts("Network Error! Please try again");
+                    final com.nyp.sit.deskmate.Message message = new com.nyp.sit.deskmate.Message("Network Error! Please try again",0);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            messageAdapter.add(message);
+                            messagesView.setSelection(messagesView.getCount() - 1);
+                        }
+                    });
+                }else if(error == 5){
+                    //on cancel
+                }
+                asrStart = false;
+                toggleButton(false);
             }
 
             //ON RESULT RECEIVE
@@ -213,6 +264,7 @@ public class MainActivity extends AppCompatActivity {
                 //Check if result list is empty
                 if (texts == null || texts.isEmpty()){
                     //ask for retry
+                    keepSession = true;
                     textView.setText("Please try again");
                 }else{
                     String text = texts.get(0);
@@ -224,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
                             messagesView.setSelection(messagesView.getCount() - 1);
                         }
                     });
-
+                    startAsrButton.setEnabled(false);
                     startNlu(text);
                 }
             }
@@ -244,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
     // asr link to nlu and trigger tts
     private void setupNlu() {
         // TODO: Change Client Access Token
-        String clientAccessToken = "6e799814649e490d9f0b3bd839c05a49";
+        String clientAccessToken = "bc35556fc5c44261a4828d8c301b619e";
         AIConfiguration aiConfiguration = new AIConfiguration(clientAccessToken,
                 AIConfiguration.SupportedLanguages.English);
         aiDataService = new AIDataService(aiConfiguration);
@@ -262,10 +314,14 @@ public class MainActivity extends AppCompatActivity {
      */
 
     private void startHotword() {
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 textView.setText("Listening for Alexa");
+                asrStart = false;
+                toggleButton(false);
+                startAsrButton.setEnabled(true);
             }
         });
 
@@ -311,18 +367,23 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("hotword", "stop listening to hotword");
 
                 // TODO: Add action after hotword is detected
-                //startSessionTracking();
-                startAsr();
+                if (!asrStart) {
+                    startAsr();
+                }
             }
         };
         Threadings.runInBackgroundThread(runnable);
     }
 
     private void startAsr() {
+        asrStart = true;
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 textView.setText("Listening to you");
+                toggleButton(true);
+                startAsrButton.setEnabled(true);
             }
         });
 
@@ -356,32 +417,73 @@ public class MainActivity extends AppCompatActivity {
                 textView.setText("Processing what you said");
             }
         });
-        // TODO: Start NLU
-        Runnable runnable = new Runnable() {
+
+
+        final AIRequest aiRequest = new AIRequest();
+        aiRequest.setQuery(text);
+
+        new AsyncTask<AIRequest, Void, AIResponse>() {
             @Override
-            public void run() {
-                AIRequest aiRequest = new AIRequest();
-                aiRequest.setQuery(text);
-
+            protected AIResponse doInBackground(AIRequest... requests) {
+                final AIRequest request = requests[0];
                 try {
-                    AIResponse aiResponse = aiDataService.request(aiRequest);
-                    Result result = aiResponse.getResult();
-                    Fulfillment fulfillment =  result.getFulfillment();
-                    String speech = fulfillment.getSpeech();
-
-                    if (speech.equalsIgnoreCase("end_session")){
-                        keepSession=false;
-                        startTts("OK, wake me again if you need me.");
-                    }else {
-                        keepSession=true;
-                        startTts(speech);
-                    }
+                    final AIResponse response = aiDataService.request(aiRequest);
+                    return response;
                 } catch (AIServiceException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
-        };
-        Threadings.runInBackgroundThread(runnable);
+            @Override
+            protected void onPostExecute(AIResponse aiResponse) {
+                if (aiResponse != null) {
+                    // process aiResponse here
+                    Result result = aiResponse.getResult();
+                    Fulfillment fulfillment = result.getFulfillment();
+                    String speech = fulfillment.getSpeech();
+
+
+                    if (speech.equalsIgnoreCase("end_session")) {
+                        keepSession = false;
+                        startTts("OK, wake me again if you need me.");
+                    } else {
+                        keepSession = true;
+                        startTts(speech);
+                    }
+                }
+            }
+
+
+        }.execute(aiRequest);
+
+//        // TODO: Start NLU
+//        Runnable runnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                AIRequest aiRequest = new AIRequest();
+//                aiRequest.setQuery(text);
+//
+//                try {
+//                    AIResponse aiResponse = aiDataService.request(aiRequest);
+//                    Result result = aiResponse.getResult();
+//                    Fulfillment fulfillment = result.getFulfillment();
+//                    String speech = fulfillment.getSpeech();
+//
+//
+//                    if (speech.equalsIgnoreCase("end_session")) {
+//                        keepSession = false;
+//                        startTts("OK, wake me again if you need me.");
+//                    } else {
+//                        keepSession = true;
+//                        startTts(speech);
+//                    }
+//
+//                } catch (AIServiceException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        };
+//        Threadings.runInBackgroundThread(runnable);
     }
 
     private void startTts(String text) {
@@ -407,7 +509,6 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("tts", e.getMessage(), e);
                     }
                 }
-
                 shallContinueConversation();
             }
         };
@@ -425,7 +526,6 @@ public class MainActivity extends AppCompatActivity {
         }else{
             //ending session
             startHotword();
-
         }
     }
 
