@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
     // NLU Variables
     private AIDataService aiDataService;
+    private AsyncTask<AIRequest, Void, AIResponse> asyncTask;
 
     // Hotword Variables detect toggle
     private boolean shouldDetect;
@@ -102,6 +103,26 @@ public class MainActivity extends AppCompatActivity {
         startHotword();
     }
 
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        try {
+//            speechRecognizer.cancel();
+//            speechRecognizer.stopListening();
+//            asyncTask.cancel(true);
+//            textToSpeech.stop();
+//        }catch (Exception e){
+//
+//        }
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        shouldDetect = true;
+//        startHotword();
+//    }
+
     /*==============================================================================================
         Setting up
      */
@@ -121,15 +142,17 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!asrStart) {
                     toggleButton(true);
-                    asrStart = true;
-                    shouldDetect = false;
                     startAsr();
                 }else{
                     toggleButton(false);
-                    asrStart = false;
-                    shouldDetect = true;
-                    speechRecognizer.cancel();
-                    speechRecognizer.stopListening();
+                    try {
+                        speechRecognizer.cancel();
+                        speechRecognizer.stopListening();
+                        asyncTask.cancel(true);
+                        textToSpeech.stop();
+                    }catch (Exception e){
+
+                    }
                     new Timer().schedule(
                             new TimerTask() {
                                 @Override
@@ -148,11 +171,15 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (listening) {
-                    startAsrButton.setText("Cancel");
-                }else{
-                    startAsrButton.setText("Listen");
-                }
+            if (listening) {
+                asrStart = true;
+                shouldDetect = false;
+                startAsrButton.setText("Cancel");
+            }else{
+                shouldDetect = true;
+                asrStart = false;
+                startAsrButton.setText("Listen");
+            }
             }
         });
     }
@@ -186,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
 
         // TODO: Set Sensitivity
         snowboyDetect = new SnowboyDetect(common.getAbsolutePath(), model.getAbsolutePath());
-        snowboyDetect.setSensitivity("0.40");
+        snowboyDetect.setSensitivity("0.30");
         snowboyDetect.applyFrontend(true);
     }
 
@@ -195,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Setup ASR
         // init speechRecogniser
         speechRecognizer = speechRecognizer.createSpeechRecognizer(this);
+
         // init listener states
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
@@ -250,6 +278,9 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }else if(error == 5){
                     //on cancel
+                }else{
+                    textView.setText("Please try again");
+                    startTts("Please try again");
                 }
                 asrStart = false;
                 toggleButton(false);
@@ -276,7 +307,6 @@ public class MainActivity extends AppCompatActivity {
                             messagesView.setSelection(messagesView.getCount() - 1);
                         }
                     });
-                    startAsrButton.setEnabled(false);
                     startNlu(text);
                 }
             }
@@ -296,10 +326,13 @@ public class MainActivity extends AppCompatActivity {
     // asr link to nlu and trigger tts
     private void setupNlu() {
         // TODO: Change Client Access Token
-        String clientAccessToken = "bc35556fc5c44261a4828d8c301b619e";
+        String clientAccessToken = "4c166b1b0569439e82c9bf8bd60ee69b";
+        //String clientAccessToken = "bc35556fc5c44261a4828d8c301b619e";
         AIConfiguration aiConfiguration = new AIConfiguration(clientAccessToken,
                 AIConfiguration.SupportedLanguages.English);
         aiDataService = new AIDataService(aiConfiguration);
+
+
     }
 
     //tts speaks nlu result
@@ -318,10 +351,8 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                textView.setText("Listening for Alexa");
-                asrStart = false;
                 toggleButton(false);
-                startAsrButton.setEnabled(true);
+                textView.setText("Listening for Alexa");
             }
         });
 
@@ -376,14 +407,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startAsr() {
-        asrStart = true;
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                textView.setText("Listening to you");
                 toggleButton(true);
-                startAsrButton.setEnabled(true);
+                textView.setText("Listening to you");
             }
         });
 
@@ -418,14 +446,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-        final AIRequest aiRequest = new AIRequest();
-        aiRequest.setQuery(text);
-
-        new AsyncTask<AIRequest, Void, AIResponse>() {
+        asyncTask = new AsyncTask<AIRequest, Void, AIResponse>() {
             @Override
             protected AIResponse doInBackground(AIRequest... requests) {
-                final AIRequest request = requests[0];
+                final AIRequest aiRequest = new AIRequest(text);
                 try {
                     final AIResponse response = aiDataService.request(aiRequest);
                     return response;
@@ -442,7 +466,6 @@ public class MainActivity extends AppCompatActivity {
                     Fulfillment fulfillment = result.getFulfillment();
                     String speech = fulfillment.getSpeech();
 
-
                     if (speech.equalsIgnoreCase("end_session")) {
                         keepSession = false;
                         startTts("OK, wake me again if you need me.");
@@ -453,8 +476,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+        };
 
-        }.execute(aiRequest);
+        asyncTask.execute();
 
 //        // TODO: Start NLU
 //        Runnable runnable = new Runnable() {
