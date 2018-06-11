@@ -63,3 +63,8 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
+
+FirebaseFunction\node_modules
+.eslintrc.json
+packageold.json
+indexold.js
