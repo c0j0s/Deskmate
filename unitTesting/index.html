@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome to Teachers portal</title>
+<script src="jquery.js"></script>
+<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+</head>
+<body>
+<div class="container">
+<div id="data">
+
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+//The Firebase SDK is initialized and available here!
+var config = {
+apiKey: "AIzaSyB29exuhOXpePNSnW4UaGd8dhSppgYbYTo",
+authDomain: "deskmate2018.firebaseapp.com",
+databaseURL: "https://deskmate2018.firebaseio.com",
+projectId: "deskmate2018",
+storageBucket: "deskmate2018.appspot.com",
+messagingSenderId: "876434687063"
+};
+firebase.initializeApp(config);
+
+var homework = firebase.database().ref('/profile/0001/homework');
+var questionDB = firebase.database().ref('/question');
+var paperName = "1";
+var questionNumber = 2;
+var paperid;
+
+homework.once('value',snapshot=>{
+	snapshot.forEach(snap => {
+				if(snap.val().name.includes(paperName)){
+						var paperQuestions = snap.val().questions;
+						//conv.data.paperQuestions = paperQuestions;
+						console.log(paperQuestions);
+						questionDB.once('value', snap => {
+							var currentQuestion = snap.child(paperQuestions[3-1].id).val();
+							var answer = snap.child("0001").answer;
+								//resolve(currentQuestion);
+							console.log(snap.child("0003").val().answer);
+						});
+				}
+		});
+})
+
+});
+</script>
+</body>
+</html>
