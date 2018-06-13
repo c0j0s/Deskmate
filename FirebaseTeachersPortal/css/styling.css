@@ -1,0 +1,25 @@
+#heading1{
+	font-size: 40px;
+}
+p{
+	margin-bottom: 0px;
+	font-size: 15px;
+}
+#heading2{
+	font-size: 32px;
+}
+.heading3{
+	font-size: 15px;
+}
+.heading4{
+	font-size: 26px;
+	font-weight: 600;
+}
+#style{
+	margin-bottom: 10px;
+}
+.btn{
+	font-size: 13px;
+	margin-left: 15px;
+	margin-bottom: 20px;
+}

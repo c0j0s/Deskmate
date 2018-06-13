@@ -7,7 +7,7 @@
 	<link rel="stylesheet" type = "text/css" href="css/bootstrap-grid.css">
 	<link rel="stylesheet" type = "text/css" href="css/bootstrap-reboot.css">
 	<link rel="stylesheet" type = "text/css" href="css/bootstrap.css">
-	
+	<link rel="stylesheet" type = "text/css" href="css/styling.css">
 	<script src="js/jquery.js"></script>
 	<script src="js/bootstrap.js"></script>
 	
@@ -18,7 +18,7 @@
   </head>
   <body>
 	<div class="container">
-		<h2 class="display-2">
+		<h2 id="heading1">
 			Welcome, Teachers
 		</h2>
 	
@@ -28,7 +28,6 @@
 	</div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
         
         //The Firebase SDK is initialized and available here!
 		 var config = {
@@ -42,26 +41,102 @@
 			firebase.initializeApp(config);
         var studentProfileDb = firebase.database().ref('profile');
 		studentProfileDb.on('value', getData)
+		var questionDb;
+		
+		function randomques(id){
+		var id = $(id).data("user")
+		console.log(id);
+					var i = 0001;
+					var a = [];
+			questionDb = firebase.database().ref('question');
+			questionDb.on('value', getQues)
+			function getQues(question){
+				question.forEach(function(quesSnapshot){
+					var qesid = quesSnapshot.key;
+					console.log(qesid);
+						if (qesid == i){
+							a.push(quesSnapshot.key);
+							console.log(a);
+							i++;
+						}
+						
+				})
+			}
+			firebase.database().ref('profile/'+id+'/homework').push({
+				name: "paper2",
+				score: 0,
+				totalScore: 100,
+				questions:{
+					0:{
+						id:a[0],
+						status:"",
+						stuAns:"",
+						tryCount:""
+					},
+					1:{
+						id:a[1],
+						status:"",
+						stuAns:"",
+						tryCount:""
+					},
+					2:{
+						id:a[2],
+						status:"",
+						stuAns:"",
+						tryCount:""
+					},
+					3:{
+						id:a[3],
+						status:"",
+						stuAns:"",
+						tryCount:""
+					}
+				}
+				
+			})
+		}
 		function getData(data){
 			data.forEach(function(childSnapshot){
 				var userkey = childSnapshot.key;
-					$('<div class= "card" ><div class="card-body" id="'+userkey+'"><h3 class = "display-4"><b>'+childSnapshot.val().name+'</b></h3></div></div><p></p>').appendTo("#data");
+					$('<div class= "card" id="style"><div class="card-body" id="details"><p id="heading2"><b>'+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" onclick="randomques(this)">Generate Question</button></div></div><p></p>').appendTo("#data");
 						childSnapshot.val().homework.forEach(function(hwsnapshot){
-						console.log(hwsnapshot.score);
+						//console.log(hwsnapshot.score);
 						if(typeof hwsnapshot.score === "undefined"){
-							$('<h3>'+hwsnapshot.name+'</h3><h4 class="container-fluid">Homework Score: <b>0</b></h4>').appendTo('#'+userkey);
+							$('<div id="'+userkey+'"><p class="heading4">'+hwsnapshot.name+'</p><p class="container-fluid">Homework Score: <b>0/100</b></p></div>').appendTo('#details');
+							hwsnapshot.questions.forEach(function(qnssnapshot){
+									$('<div id="Q'+qnssnapshot.id+'"><p class="container-fluid" class="heading3">No of Tries: '+qnssnapshot.tryCount+'</p><p class="container-fluid" class="heading3">Student Answer: '+qnssnapshot.stuAns+'</p></div>').appendTo('#'+userkey);
+									questionDb = firebase.database().ref('question');
+									questionDb.on('value', getQues)
+									function getQues(question){
+										question.forEach(function(quesSnapshot){
+											var qesid = quesSnapshot.key;
+												if( qesid === qnssnapshot.id){
+													$('<p class="heading3">'+quesSnapshot.val().question+'</p>').prependTo('#Q'+ qnssnapshot.id);
+												}
+										})
+									}
+								})
 						}
 						else{
-								$('<h3 class = "n">'+hwsnapshot.name+'</h3><h4 class="container-fluid">Homework Score: <b>'+hwsnapshot.score+'</b></h4>').appendTo('#'+userkey);
-							hwsnapshot.questions.forEach(function(qnssnapshot){
-								$('<div id="style"><h3 class="id">'+qnssnapshot.id+'</h3><h4 class="container-fluid">Status: '+qnssnapshot.status+'</h4><h4 class="container-fluid" >Student Answer: '+qnssnapshot.stuAns+'</h4></div>').appendTo('#'+userkey);
-							})
+								$('<div id="'+userkey+'"><p class="heading4">'+hwsnapshot.name+'</p><p class="container-fluid">Homework Score: <b>'+hwsnapshot.score+'</b></p></div>').appendTo('#details');
+								hwsnapshot.questions.forEach(function(qnssnapshot){
+									$('<div id="Q'+qnssnapshot.id+'"><p class="container-fluid" class="heading3">No of Tries: '+qnssnapshot.tryCount+'</p><p class="container-fluid" class="heading3">Student Answer: '+qnssnapshot.stuAns+'</p></div>').appendTo('#'+userkey);
+									questionDb = firebase.database().ref('question');
+									questionDb.on('value', getQues)
+									function getQues(question){
+										question.forEach(function(quesSnapshot){
+											var qesid = quesSnapshot.key;
+												if( qesid === qnssnapshot.id){
+													$('<p class="heading3">'+quesSnapshot.val().question+'</p>').prependTo('#Q'+ qnssnapshot.id);
+												}
+										})
+									}
+								})
 							}
 						})
-						
 			})
 		}
-      });
+		
     </script>
   </body>
 </html>
