@@ -1,7 +1,6 @@
 package com.nyp.sit.deskmate;
 
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -9,37 +8,22 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
+import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.gson.JsonArray;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -51,11 +35,6 @@ import ai.api.model.AIResponse;
 import ai.api.model.Fulfillment;
 import ai.api.model.Result;
 import ai.kitt.snowboy.SnowboyDetect;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-
-import static java.lang.Boolean.TRUE;
 
 public class MainActivity extends AppCompatActivity {
     // View Variables
@@ -148,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         speechRecognizer.cancel();
                         speechRecognizer.stopListening();
-                        asyncTask.cancel(true);
+                        //asyncTask.cancel(true);
                         textToSpeech.stop();
                     }catch (Exception e){
 
@@ -326,8 +305,8 @@ public class MainActivity extends AppCompatActivity {
     // asr link to nlu and trigger tts
     private void setupNlu() {
         // TODO: Change Client Access Token
-        String clientAccessToken = "4c166b1b0569439e82c9bf8bd60ee69b";
-        //String clientAccessToken = "bc35556fc5c44261a4828d8c301b619e";
+        //String clientAccessToken = "4c166b1b0569439e82c9bf8bd60ee69b";
+        String clientAccessToken = "bc35556fc5c44261a4828d8c301b619e";
         AIConfiguration aiConfiguration = new AIConfiguration(clientAccessToken,
                 AIConfiguration.SupportedLanguages.English);
         aiDataService = new AIDataService(aiConfiguration);
@@ -446,53 +425,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        asyncTask = new AsyncTask<AIRequest, Void, AIResponse>() {
-            @Override
-            protected AIResponse doInBackground(AIRequest... requests) {
-                final AIRequest aiRequest = new AIRequest(text);
-                try {
-                    final AIResponse response = aiDataService.request(aiRequest);
-                    return response;
-                } catch (AIServiceException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-            @Override
-            protected void onPostExecute(AIResponse aiResponse) {
-                if (aiResponse != null) {
-                    // process aiResponse here
-                    Result result = aiResponse.getResult();
-                    Fulfillment fulfillment = result.getFulfillment();
-                    String speech = fulfillment.getSpeech();
-
-                    if (speech.equalsIgnoreCase("end_session")) {
-                        keepSession = false;
-                        startTts("OK, wake me again if you need me.");
-                    } else {
-                        keepSession = true;
-                        startTts(speech);
-                    }
-                }
-            }
-
-        };
-
-        asyncTask.execute();
-
-//        // TODO: Start NLU
-//        Runnable runnable = new Runnable() {
+//        asyncTask = new AsyncTask<AIRequest, Void, AIResponse>() {
 //            @Override
-//            public void run() {
-//                AIRequest aiRequest = new AIRequest();
-//                aiRequest.setQuery(text);
-//
+//            protected AIResponse doInBackground(AIRequest... requests) {
+//                final AIRequest aiRequest = new AIRequest(text);
 //                try {
-//                    AIResponse aiResponse = aiDataService.request(aiRequest);
+//                    final AIResponse response = aiDataService.request(aiRequest);
+//                    return response;
+//                } catch (AIServiceException e) {
+//                    e.printStackTrace();
+//                }
+//                return null;
+//            }
+//            @Override
+//            protected void onPostExecute(AIResponse aiResponse) {
+//                if (aiResponse != null) {
+//                    // process aiResponse here
 //                    Result result = aiResponse.getResult();
 //                    Fulfillment fulfillment = result.getFulfillment();
 //                    String speech = fulfillment.getSpeech();
-//
 //
 //                    if (speech.equalsIgnoreCase("end_session")) {
 //                        keepSession = false;
@@ -501,13 +452,45 @@ public class MainActivity extends AppCompatActivity {
 //                        keepSession = true;
 //                        startTts(speech);
 //                    }
-//
-//                } catch (AIServiceException e) {
-//                    e.printStackTrace();
 //                }
 //            }
+//
 //        };
-//        Threadings.runInBackgroundThread(runnable);
+
+//        asyncTask.execute();
+
+        // TODO: Start NLU
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                AIRequest aiRequest = new AIRequest();
+                aiRequest.setQuery(text);
+
+                try {
+                    AIResponse aiResponse = aiDataService.request(aiRequest);
+                    Log.e("deskmate",aiResponse.toString());
+                    Result result = aiResponse.getResult();
+                    Log.e("deskmate",result.toString());
+                    Fulfillment fulfillment = result.getFulfillment();
+                    //Log.e("deskmate",result.getFulfillment().toString());
+                    String speech = "test";//fulfillment.getSpeech();
+                    //Log.e("deskmate",result.getFulfillment().getData().toString());
+
+
+                    if (speech.equalsIgnoreCase("end_session")) {
+                        keepSession = false;
+                        startTts("OK, wake me again if you need me.");
+                    } else {
+                        keepSession = true;
+                        startTts(speech);
+                    }
+
+                } catch (AIServiceException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        Threadings.runInBackgroundThread(runnable);
     }
 
     private void startTts(String text) {

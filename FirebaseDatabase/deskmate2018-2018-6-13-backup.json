@@ -1,0 +1,98 @@
+{
+  "profile" : {
+    "0001" : {
+      "homework" : [ null, {
+        "name" : "paper1",
+        "questions" : [ {
+          "id" : "0001",
+          "status" : "correct",
+          "stuAns" : "B",
+          "tryCount" : 2
+        }, {
+          "id" : "0002",
+          "status" : "correct",
+          "stuAns" : "C",
+          "tryCount" : 0
+        }, {
+          "id" : "0003",
+          "status" : "correct",
+          "stuAns" : "B",
+          "tryCount" : 0
+        }, {
+          "id" : "0004",
+          "status" : "correct",
+          "stuAns" : "D",
+          "tryCount" : 0
+        } ],
+        "score" : 80,
+        "totalScore" : 100
+      } ],
+      "name" : "admin",
+      "point" : 0
+    },
+    "0002" : {
+      "name" : "test",
+      "point" : 10000
+    }
+  },
+  "question" : {
+    "0001" : {
+      "a" : "Both reproduces by spores",
+      "answer" : "b",
+      "b" : "Both make their own food",
+      "c" : "Both can be useful or harmful to us",
+      "d" : "Both cannot be seen under microscope",
+      "difficulty" : 5,
+      "marks" : 20,
+      "question" : "Which of the following is true about both fungi and bacteria?",
+      "theme" : "diversity",
+      "topic" : "living things"
+    },
+    "0002" : {
+      "a" : "Fungi an reproduce",
+      "answer" : "c",
+      "b" : "Not all fungi can be seen without microscopes",
+      "c" : "Fungi can move from place to place on its own",
+      "d" : "Fungi feeds on other living things, which may be dead or alive",
+      "marks" : 20,
+      "question" : "Which of the following is false about fungi?"
+    },
+    "0003" : {
+      "a" : "Which of  is false about fungi?",
+      "answer" : "b",
+      "b" : "\"Which of the following is false ",
+      "c" : " following is false about fungi?\"",
+      "d" : "Which of the following is false about fungi?",
+      "marks" : 20,
+      "question" : "Which of the following is false about fungi?"
+    },
+    "0004" : {
+      "a" : " the following is false about fungi?\"",
+      "answer" : "d",
+      "b" : " false about fungi?\"",
+      "c" : "Which offollowing is false about fungi?",
+      "d" : "\"Which of ",
+      "marks" : 20,
+      "question" : "Which of the following  fungi?"
+    }
+  },
+  "time" : {
+    "user" : {
+      "0001" : {
+        "paper1" : {
+          "1" : 2,
+          "2" : 3,
+          "3" : 10,
+          "4" : 5,
+          "5" : 7,
+          "6" : 1,
+          "7" : 2,
+          "8" : 2,
+          "9" : 5,
+          "10" : 1,
+          "total" : 60
+        }
+      }
+    }
+  }
+}
