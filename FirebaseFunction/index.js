@@ -9,23 +9,94 @@ const questionDB = admin.database().ref('/question');
 
 const app = dialogflow({debug: false});
 
-app.intent('Begin Homework Session', (conv, {paperName}) => {
-    conv.data.paperName = paperName;
-    conv.ask(`Alright, retrieving paper ${paperName}!`);
-    conv.ask('<speak><break time="1s"/>Would you like to start on question 1?</speak>');
-  });
+const WELCOME_INTENT = 'Default Welcome Intent';
+const FALLBACK_INTENT = 'Default Fallback Intent';
+const BEGIN_HOMEWORK_INTENT = 'Begin Homework Session';
+const BEGIN_QUESTION_INTENT = 'Begin Question';
+const CHECK_ANSWER_INTENT = 'Check Student Answer';
+const ASK_ANYTHING_INTENT = 'Ask Anything';
 
-app.intent('Begin Question', (conv, {questionNumber}) => {
+
+app.intent(BEGIN_HOMEWORK_INTENT, (conv, {paperName}) => {
+    conv.data.paperName = paperName;
+    conv.ask(`<speak>Hang on, searching for paper ${paperName}!<break time="2s"/></speak>`);
+    return getPaper(conv,paperName).
+    then(currentPaperName => {
+        console.log("paper name:" + currentPaperName)
+        if(currentPaperName === false){
+            return conv.ask(`Sorry, I couldn't find paper ${paperName} . Please try again.`);
+        }else{
+            conv.data.score = 0;
+            return conv.ask(`<speak>Ok, found ${currentPaperName}. <break time="1s"/> Would you like to start on question 1?</speak>`);
+        }
+    })
+});
+
+app.intent(BEGIN_QUESTION_INTENT, (conv, {questionNumber}) => {
     if(questionNumber === ""){
         questionNumber = 1;
     }
     conv.data.questionNumber = questionNumber;
-    var paperName = conv.data.paperName;
-    return getFBQuestions(conv,paperName, questionNumber)
+    return getFBQuestions(conv, questionNumber)
     .then(currentQuestion => {
-        return conv.ask(formQuestion(questionNumber,currentQuestion));
+        if(currentQuestion === false){
+            return conv.ask(`Sorry, I couldn't find question ${questionNumber} . Please try again.`);
+        }else{
+            conv.data.questionTryCount = 0;
+            conv.data.preQuestionNumber = 0;
+            return conv.ask(formQuestion(questionNumber,currentQuestion));
+        }
+    }).catch(error => {
+        return conv.close(error);
     });
 });
+
+const getPaper = (conv,paperName) => new Promise(resolve => {
+    var paper = false;
+    homework.once('value',snapshot=>{
+        snapshot.forEach(snap => {
+            console.log(snap.val().name)
+            console.log(paperName)
+            if(snap.val().name.includes(paperName)){
+                var hwref = homework.child(snap.key).toString();
+                conv.data.currentPaperRef = hwref.replace('https://deskmate2018.firebaseio.com', '');
+                conv.data.currentPaper = snap;
+                conv.data.paperName = snap.val().name;
+                console.log("paper found !");
+                paper = snap.val().name;
+            }
+        })
+        console.log(paper)
+        resolve(paper);
+    })
+});
+
+const getFBQuestions = (conv, questionNumber) => new Promise(
+    resolve => {
+        var paper = conv.data.currentPaper;
+        var paperQuestions = paper.questions;
+        if(questionNumber <= Object.keys(paperQuestions).length){
+            return questionDB.once('value', snap => {
+                var currentQuestion = snap.child(paperQuestions[questionNumber-1].id).val();
+                conv.data.currentQuestion = currentQuestion;
+                resolve(currentQuestion);
+            });
+        }else{
+            return resolve(false);
+        }
+    }
+);
+
+const getQuestionsOnly = (conv,paperQuestions, questionNumber) => new Promise(
+    resolve => {
+        questionDB.once('value', snap => {
+            var currentQuestion = snap.child(paperQuestions[questionNumber-1].id).val();
+            conv.data.currentQuestion = currentQuestion;
+            resolve(currentQuestion);
+        });
+    }
+);
+
 
 function formQuestion(questionNumber,currentQuestion) {
     const speech = `<speak>
@@ -42,223 +113,104 @@ function formQuestion(questionNumber,currentQuestion) {
     return speech;
 }
 
-const getFBQuestions = (conv,paperName, questionNumber) => new Promise(
-    resolve => {
-        homework.once('value',snapshot=>{
-            snapshot.forEach(snap => {
-                if(snap.val().name.includes(paperName)){
-                    var paperQuestions = snap.val().questions;
-                    conv.data.paperQuestions = paperQuestions;
-                    return questionDB.once('value', snap => {
-                        conv.data.qid = paperQuestions[questionNumber-1].id
-                        var currentQuestion = snap.child(paperQuestions[questionNumber-1].id).val();
-                        conv.data.currentQuestion = currentQuestion;
-                        resolve(currentQuestion);
-                    });
-                }
-            })
-        })
-    }
-  );
-
-  const getQuestionsOnly = (conv,paperQuestions, questionNumber) => new Promise(
-    resolve => {
-        questionDB.once('value', snap => {
-            conv.data.qid = paperQuestions[questionNumber-1].id
-            var currentQuestion = snap.child(paperQuestions[questionNumber-1].id).val();
-            conv.data.currentQuestion = currentQuestion;
-            resolve(currentQuestion);
-        });
-    }
-  );
-
-  const getAnswerById = (id) => new Promise(
-    resolve => {
-        questionDB.once('value', snap => {
-            console.log("get answer for question " + id)
-            console.log(snap.val())
-            var answer = snap.child(id).val().answer;
-            console.log("answer for question " + answer)
-            resolve(answer);
-        });
-    }
-  );
-
-app.intent('Check Student Answer', (conv, {answer}) => {
-    var speech;
+app.intent(CHECK_ANSWER_INTENT, (conv, {answer}) => {
+    var speech, postData;
     var currentQuestion = conv.data.currentQuestion;
-    return getAnswerById(conv.data.qid).then(dbAnswer => {
-        console.log(dbAnswer)
-        if(answer === dbAnswer.toUpperCase()){
-            speech = `<speak>Answer correct! <break time="1s"/> Moving on to the next question</speak>`;
-            var paperResult = conv.data.paperResult;
-            paperResult = paperResult + currentQuestion.marks;
-            conv.data.paperResult = paperResult;  
-            conv.data.questionNumber++;
-        }else{
-            speech = `<speak>Answer incorrect! <break time="1s"/> try again?</speak>`;
-        }
-        var questionNumber = conv.data.questionNumber;   
-        var paperQuestionsLength = conv.data.paperQuestions.length;
+    conv.data.preQuestionNumber = conv.data.questionNumber;
+    if(answer === currentQuestion.answer.toUpperCase()){
+        speech = `<speak>Answer correct! <break time="1s"/> Moving on to the next question</speak>`;
+        conv.data.questionAnswerStatus = "correct";
 
-        if(questionNumber <= paperQuestionsLength){
-            var paperName = conv.data.paperName;
-            var paperQuestions = conv.data.paperQuestions;
-            return getQuestionsOnly(conv,paperQuestions, questionNumber)
-            .then(currentQuestion => {
-                conv.ask(speech);
-                return conv.ask(formQuestion(questionNumber,currentQuestion));
-            });
-        }else{
-            return conv.close("Reach the end of paper");
+        if(conv.data.questionTryCount === 0){
+            conv.data.score = conv.data.score + currentQuestion.marks;
         }
+
+        conv.data.questionNumber++;
+    }else{
+        speech = `<speak>Answer incorrect! <break time="1s"/> try again?</speak>`;
+        conv.data.questionAnswerStatus  = "wrong";
+    }
+
+    var questionNumber = conv.data.questionNumber;   
+    var paperQuestions = conv.data.currentPaper.questions;
+    
+    if(questionNumber === conv.data.preQuestionNumber){
+        conv.data.questionTryCount++;
+    }
+
+    postData = {
+        status: conv.data.questionAnswerStatus,
+        stuAns: answer,
+        tryCount: conv.data.questionTryCount
+    }
+    updateQuestionScore(conv,postData,conv.data.preQuestionNumber);
+
+    if(questionNumber <= Object.keys(paperQuestions).length){
+        if(conv.data.questionAnswerStatus === "correct"){
+            conv.data.questionTryCount = 0;
+        }
+        return getFBQuestions(conv, questionNumber)
+        .then(currentQuestion => {
+            conv.ask(speech);
+            return conv.ask(formQuestion(questionNumber,currentQuestion));
+        });
+    }else{
+        updatePaperProperties(conv,conv.data.score);
+        return conv.close("Reach the end of paper");
+    }
+});  
+
+function updateQuestionScore(conv,postData,questionNumber){
+    var hwref = admin.database().ref(conv.data.currentPaperRef).child("questions/" + (questionNumber - 1));
+    hwref.update(postData);
+}
+function updatePaperProperties(conv,score){
+    admin.database().ref(conv.data.currentPaperRef).update({
+        score: score,
+        attempts: 2,
+        status: "completed"
     })
-  });  
+}
+
+app.intent(ASK_ANYTHING_INTENT, (conv, {Keyword}) => {
+
+});
+
+app.fallback((conv) => {
+    const intent = conv.intent;
+    // intent contains the name of the intent
+    // you defined in the Intents area of Dialogflow
+    
+    switch (intent) {
+        case WELCOME_INTENT:{
+            conv.ask('Sorry, i didnt get that, please try again;');
+            break;
+        }
+        
+        case BEGIN_HOMEWORK_INTENT:{
+            const paperName = conv.arguments.get("paperName");
+            conv.ask(`I didn't get that`);
+            break;
+        }
+        
+        // case BEGIN_QUESTION_INTENT:
+        // break;
+        
+        // case CHECK_ANSWER_INTENT:
+        // break;
+    }
+});
+
+app.intent(FALLBACK_INTENT, (conv) => {
+    conv.data.fallbackCount++;
+    // Provide two prompts before ending game
+    if (conv.data.fallbackCount === 1) {
+        conv.contexts.set(DONE_YES_NO_CONTEXT, 5);
+        conv.ask('Are you done playing Number Genie?');
+    } else {
+        conv.close(`Since I'm still having trouble, so I'll stop here. ` +
+        `Let’s play again soon.`);
+    }
+});
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
-
-
-// const Assistant = require('actions-on-google').ApiAiAssistant;
-// const functions = require('firebase-functions');
-// const admin = require('firebase-admin');
-// admin.initializeApp(functions.config().firebase);
-
-// const know = admin.database().ref('/animal-knowledge');
-// const graph = know.child('graph');
-// const homework = admin.database().ref('/profile/0001/homework');
-// const questionDB = admin.database().ref('/question');
-
-// // Contexts
-// const WELCOME_CONTEXT = 'welcome';
-// const HOMEWORKSESSION_CONTEXT = 'startHomework';
-// const ANSWERQUESTIONCONTEXT = 'answer';
-
-// // Context Parameters
-// const QUESTION_ID = 'id';
-// const BRANCH_PARAM = 'branch';
-// const LEARN_THING_PARAM = 'learn-thing';
-// const GUESSABLE_THING_PARAM = 'guessable-thing';
-// const LEARN_DISCRIMINATION_PARAM = 'learn-discrimination';
-// const ANSWER_PARAM = 'answer';
-// const PAPER_PARAM = 'PaperName';
-
-// var paperQuestions;
-// var questionIndex = 0;
-// var paperResult = 0;
-// var currentQuestion;
-
-// exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
-//     console.log('headers: ' + JSON.stringify(request.headers));
-//     console.log('body: ' + JSON.stringify(request.body));
-
-//     const assistant = new Assistant({request: request, response: response});
-
-//     let actionMap = new Map();
-//     actionMap.set('beginHomeworkSession', startHomeworkSession);
-//     actionMap.set('CheckStudentAnswer', handleStudentAnswer);
-//     actionMap.set('moveOn', MoveOnToNextQuestion);
-//     actionMap.set('tryAgain', TryQuestionAgain);
-//     assistant.handleRequest(actionMap);
-
-//     function startHomeworkSession(assistant) {
-//         var paperName = assistant.getArgument(PAPER_PARAM);
-//         questionIndex = 0;
-//         const homework_ref = homework.child(paperName);
-//         homework_ref.once('value', snap => {
-//             paperQuestions = snap.val();
-//             questionDB.once('value', snap => {
-//                 currentQuestion = snap.child(paperQuestions[questionIndex]).val();
-//                 const speech = `<speak>
-//                                 <p><s>Ok, starting paper ` + paperName + `. </s></p>
-//                                 <break time="2s"/>
-//                                 <p><s>Question 1: <break time="1s"/> ${currentQuestion.question}</s></p>
-//                                 <break time="2s"/>
-//                                 <p><s>Option 1: <break time="1s"/> ${currentQuestion.a}</s></p>
-//                                 <p><s>Option 2: <break time="1s"/> ${currentQuestion.b}</s></p>
-//                                 <p><s>Option 3: <break time="1s"/> ${currentQuestion.c}</s></p>
-//                                 <p><s>Option 4: <break time="1s"/> ${currentQuestion.d}</s></p>
-//                                 <break time="1s"/>
-//                                 <p><s>What is your option?</s></p>
-//                                 </speak>
-//                                 `;
-                
-//                 const parameters = {};
-//                 parameters["id"] = snap.key;
-//                 parameters["answer"] = currentQuestion.answer;
-//                 console.log(parameters);
-//                 assistant.setContext("Question", 5, parameters);
-//                 assistant.ask(speech);
-//             });
-//         });
-//     }
-
-//     function handleStudentAnswer(assistant){
-//         //var answerc = assistant.getContextArgument("Question", "answer").value;
-//         //console.log("answer"+answerc);
-//         var answer = assistant.getArgument(ANSWER_PARAM);
-//         console.log(answer);
-//         console.log(paperQuestions);
-
-//         var speech;
-//         if(answer === currentQuestion.answer.toUpperCase()){
-//             speech = `<speak>Correct! <break time="1s"/>`;
-//             paperResult = paperResult + currentQuestion.marks;
-//             //assistant.setContext("answerCorrect", 5);
-//         }else{
-//             speech = `<speak>Wrong! <break time="1s"/>`;
-//             //assistant.setContext("answerWrong", 5);
-//         }
-//         questionIndex++;
-//         if(questionIndex < paperQuestions.length){
-//             questionDB.once('value', snap => {
-//                 currentQuestion = snap.child(paperQuestions[questionIndex]).val();
-//                 console.log(questionIndex);
-//                 console.log(currentQuestion.answer);
-//                 speech = speech + "moving on to the next question. <break time='2s'/>";
-//                 speech = speech + `<p><s>Question ${questionIndex + 1}: <break time="1s"/> ${currentQuestion.question}</s></p>
-//                                     <break time="2s"/>
-//                                     <p><s>a) <break time="1s"/> ${currentQuestion.a}</s></p>
-//                                     <p><s>b) <break time="1s"/> ${currentQuestion.b}</s></p>
-//                                     <p><s>Option 3: <break time="1s"/> ${currentQuestion.c}</s></p>
-//                                     <p><s>Option 4: <break time="1s"/> ${currentQuestion.d}</s></p>
-//                                     <break time="1s"/>
-//                                     <p><s>What is your option?</s></p>`;
-//                 speech = speech + "</speak>"
-//                 assistant.setContext("Question", 5);
-//                 assistant.ask(speech);
-//             });
-//         }else{
-//             assistant.ask("<speak>you have completed this paper</speak>");
-//         }
-
-//     }
-
-
-//     function MoveOnToNextQuestion(assistant){
-//         console.log("Next Question")
-//         questionDB.once('value', snap => {
-//             currentQuestion = snap.child(paperQuestions[questionIndex]).val();
-//             const speech = `<speak>
-//                             <p><s>Question ${questionIndex + 1}: <break time="1s"/> ${currentQuestion.question}</s></p>
-//                             <break time="2s"/>
-//                             <p><s>Option 1: <break time="1s"/> ${currentQuestion.a}</s></p>
-//                             <p><s>Option 2: <break time="1s"/> ${currentQuestion.b}</s></p>
-//                             <p><s>Option 3: <break time="1s"/> ${currentQuestion.c}</s></p>
-//                             <p><s>Option 4: <break time="1s"/> ${currentQuestion.d}</s></p>
-//                             <break time="1s"/>
-//                             <p><s>What is your option?</s></p>
-//                             </speak>
-//                             `;
-            
-//             assistant.setContext("answerQuestion", 5);
-//             assistant.ask(speech);
-//         });
-//     }
-
-//     function TryQuestionAgain(assistant){
-//         console.log("Try again")
-//         const speech = `<speak>What is you new answer?</speak>`;
-//         assistant.setContext("answerQuestion", 5);
-//         assistant.ask(speech);
-//     }
-// });

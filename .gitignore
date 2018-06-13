@@ -68,3 +68,5 @@ FirebaseFunction\node_modules
 .eslintrc.json
 packageold.json
 indexold.js
+unitTesting
+functionsBoiler
