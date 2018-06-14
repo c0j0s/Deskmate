@@ -147,12 +147,12 @@
 			data.forEach(function(childSnapshot){
 				var userkey = childSnapshot.key;
 				//console.log(childSnapshot);
-					$('<div class= "card" id="style"><div class="card-body" id="details'+userkey+'"><p id="heading2"><b>'+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button></div></div><p></p>').appendTo("#data");
+					$('<div class= "card bg-light mb-3" id="style"><div id="heading2" class="card-header"><b>'+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button></div><div class="card-body" id="details'+userkey+'"></div></div><p></p>').appendTo("#data");
 						childSnapshot.child("homework").forEach(function(hwsnapshot){
 						//console.log(childSnapshot.val());
-								$('<div id="'+hwsnapshot.key+'"><p class="heading4">'+hwsnapshot.val().name+'</p><p class="container-fluid">Homework Score: <b>'+hwsnapshot.val().score+'</b></p></div>').appendTo('#details'+userkey);
+								$('<div id="'+hwsnapshot.key+'"><div class="heading4">'+hwsnapshot.val().name+'</div><div>Homework Score: <b>'+hwsnapshot.val().score+'</b></div></div>').appendTo('#details'+userkey);
 								hwsnapshot.child("questions").forEach(function(qnssnapshot){
-									$('<div id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="container-fluid" class="heading3">No of Tries: '+qnssnapshot.val().tryCount+'</p><p class="container-fluid" class="heading3">Student Answer: '+qnssnapshot.val().stuAns+'</p></div>').appendTo('#'+hwsnapshot.key);
+									$('<div id="Q'+qnssnapshot.val().id+hwsnapshot.key+'" class="card-text"><p class="container-fluid" class="heading3">No of Tries: '+qnssnapshot.val().tryCount+'</p><p class="container-fluid" class="heading3">Student Answer: '+qnssnapshot.val().stuAns+'</p></div>').appendTo('#'+hwsnapshot.key);
 									questionDb = firebase.database().ref('question');
 									questionDb.once('value', getQues)
 									function getQues(question){
@@ -161,7 +161,7 @@
 										question.forEach(function(quesSnapshot){
 											var qesid = quesSnapshot.key;
 												if( qesid === qnssnapshot.val().id){
-													$('<p class="heading3">'+quesSnapshot.val().question+'</p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
+													$('<p class="heading3 card-title">'+quesSnapshot.val().question+'</p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
 													$("#"+userkey).on('click',function() {
 														if(curruser == $(this).data("user")){
 															qnsid.push(qesid);
