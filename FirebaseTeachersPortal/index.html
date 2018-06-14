@@ -25,6 +25,30 @@
 	<div id="data">
 		
 	</div>
+		<div class="container">
+
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+		  <h4 class="modal-title">Modal Header</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          Paper Name:<input type="text" name="papername" id = "pName"></input>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" onclick="writetoDB()">Submit</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+</div>
 	</div>
 
     <script>
@@ -44,11 +68,14 @@
 		var questionDb;
 		var qnsid = [];
 		var curruser = "";
+		var randomvalue;
+		var a = [];
+		var i = 0001;
+		var	ranques = [];
+		var index;	
+		var	papername;
+		var ids;		
 		function randomques(id){
-		var id = $(id).data("user")
-		//console.log(qnsid.length);
-					var a = [];
-					var i = 0001;
 			questionDb = firebase.database().ref('question');
 			questionDb.on('value', getQues)
 			function getQues(question){
@@ -68,44 +95,59 @@
 						i++;
 				})
 			}
-			<!-- firebase.database().ref('profile/'+id+'/homework').push({ -->
-				<!-- name: "paper2", -->
-				<!-- score: 0, -->
-				<!-- totalScore: 100, -->
-				<!-- questions:{ -->
-					<!-- 0:{ -->
-						<!-- id:a[0], -->
-						<!-- status:"", -->
-						<!-- stuAns:"", -->
-						<!-- tryCount:"" -->
-					<!-- }, -->
-					<!-- 1:{ -->
-						<!-- id:a[1], -->
-						<!-- status:"", -->
-						<!-- stuAns:"", -->
-						<!-- tryCount:"" -->
-					<!-- }, -->
-					<!-- 2:{ -->
-						<!-- id:a[2], -->
-						<!-- status:"", -->
-						<!-- stuAns:"", -->
-						<!-- tryCount:"" -->
-					<!-- }, -->
-					<!-- 3:{ -->
-						<!-- id:a[3], -->
-						<!-- status:"", -->
-						<!-- stuAns:"", -->
-						<!-- tryCount:"" -->
-					<!-- } -->
-				<!-- } -->
-				
-			<!-- }) -->
+			return ids = $(id).data("user");
 		}
+		function writetoDB(){
+		console.log(ids);
+		papername = document.getElementById('pName').value;
+		console.log(papername);
+				for (var c = 0; c < 4; c++){
+					randomvalue = a[Math.floor(Math.random() * a.length)];
+					index = a.indexOf(randomvalue);
+					ranques.push(randomvalue);
+					console.log(ranques);
+					a.splice(index,1);
+				}
+			firebase.database().ref('profile/'+ids+'/homework').push({
+				status: "not completed",
+				attempts: 0,
+				name: papername,
+				score: 0,
+				totalScore: 100,
+				questions:{
+					0:{
+						id:ranques[0],
+						status:"",
+						stuAns:"",
+						tryCount:""
+					},
+					1:{
+						id:ranques[1],
+						status:"",
+						stuAns:"",
+						tryCount:""
+					},
+					2:{
+						id:ranques[2],
+						status:"",
+						stuAns:"",
+						tryCount:""
+					},
+					3:{
+						id:ranques[3],
+						status:"",
+						stuAns:"",
+						tryCount:""
+					}
+				}
+				
+			})
+			}
 		function getData(data){
 			data.forEach(function(childSnapshot){
 				var userkey = childSnapshot.key;
 				//console.log(childSnapshot);
-					$('<div class= "card" id="style"><div class="card-body" id="details'+userkey+'"><p id="heading2"><b>'+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" onclick="randomques(this)">Generate Question</button></div></div><p></p>').appendTo("#data");
+					$('<div class= "card" id="style"><div class="card-body" id="details'+userkey+'"><p id="heading2"><b>'+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button></div></div><p></p>').appendTo("#data");
 						childSnapshot.child("homework").forEach(function(hwsnapshot){
 						//console.log(childSnapshot.val());
 								$('<div id="'+hwsnapshot.key+'"><p class="heading4">'+hwsnapshot.val().name+'</p><p class="container-fluid">Homework Score: <b>'+hwsnapshot.val().score+'</b></p></div>').appendTo('#details'+userkey);
@@ -119,7 +161,6 @@
 										question.forEach(function(quesSnapshot){
 											var qesid = quesSnapshot.key;
 												if( qesid === qnssnapshot.val().id){
-												console.log(curruser);
 													$('<p class="heading3">'+quesSnapshot.val().question+'</p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
 													$("#"+userkey).on('click',function() {
 														if(curruser == $(this).data("user")){
@@ -129,7 +170,7 @@
 														else{
 															qnsid = [];
 															curruser = $(this).data("user")
-															console.log(curruser);
+															//console.log(curruser);
 															qnsid.push(qesid);
 															console.log(qnsid);
 														}
