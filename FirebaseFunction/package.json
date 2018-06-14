@@ -17,7 +17,8 @@
   "dependencies": {
     "actions-on-google": "^2.0.0",
     "firebase-admin": "^5.12.1",
-    "firebase-functions": "^1.0.4"
+    "firebase-functions": "^1.0.4",
+    "dialogflow-fulfillment": "^0.4.1"
   },
   "private": true,
   "devDependencies": {
