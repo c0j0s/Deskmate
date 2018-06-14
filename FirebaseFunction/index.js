@@ -16,6 +16,194 @@ const BEGIN_QUESTION_INTENT = 'Begin Question';
 const CHECK_ANSWER_INTENT = 'Check Student Answer';
 const ASK_ANYTHING_INTENT = 'Ask Anything';
 
+const {WebhookClient} = require('dialogflow-fulfillment');
+exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
+    const agent = new WebhookClient({ request, response });
+    console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+    let conv = agent.conv();
+    
+    const param = request.body.result.parameters;
+    
+    function beginHomeworkSession(agent){
+        var paperName = param.paperName;
+        var speech = `Hang on, searching for paper ${paperName}.`;
+        return getPaper(agent, paperName).
+        then(currentPaperName => {
+            if(currentPaperName === false){       
+                return agent.add(speech + ` Sorry, I couldn't find paper ${currentPaperName} . Please try again.`);
+            }else{
+                return agent.add(speech + ` Ok, found ${currentPaperName}. Would you like to start on question 1?`);
+            }
+        })
+    }
+
+    function beginQuestion(agent) {
+        var questionNumber = param.questionNumber;
+        var paperName = param.paperName;
+        if(questionNumber === ""){
+            questionNumber = 1;
+        }
+        console.log("intentQuestionNumber: " + questionNumber)
+        return getFBQuestions(agent,questionNumber)
+        .then(currentQuestion => {
+            if(currentQuestion === false){
+                return agent.add(`Sorry, I couldn't find question ${questionNumber} . Please try again.`);
+            }else{
+                agent.clearContext('checkanswercontext')
+                const context = {
+                    'name': 'checkanswercontext', 
+                    'lifespan': 5, 
+                    'parameters': {
+                        'questionTryCount' : 0,
+                        'preQuestionNumber' : 0,
+                        'questionNumber': questionNumber,
+                        'questionAnswerStatus': "",
+                        'score': 0
+                    }
+                };
+                agent.setContext(context)
+                return agent.add(formQuestion(questionNumber,currentQuestion));
+            }
+        }).catch(error => {
+            return agent.add("Error occured " + error);
+        });
+    }
+    
+    const getPaper = (agent, paperName) => new Promise(resolve => {
+        var paper = false;
+        homework.once('value',snapshot=>{
+            snapshot.forEach(snap => {
+                console.log("name: " + snap.val().name)
+                if(snap.val().name.includes(paperName)){
+                    var paperparam = snap.val();
+                    paperparam.key = snap.key;
+                    console.log('name: ' + paperparam.name + " key: " + paperparam.key)
+                    const context = {
+                        'name': 'paper', 
+                        'lifespan': 30, 
+                        'parameters': paperparam,
+                    };
+                    agent.setContext(context);
+                    paper = snap.val().name;
+                }
+            })
+            resolve(paper);
+        })
+    });
+    
+    const getFBQuestions = (agent, questionNumber) => new Promise(
+        resolve => {
+            var paper = agent.getContext('paper').parameters;
+            var paperQuestions = paper.questions;
+
+            if(questionNumber <= Object.keys(paperQuestions).length){
+                return questionDB.once('value', snap => {
+                    agent.clearContext('currentQuestion');
+                    var currentQuestion = snap.child(paperQuestions[questionNumber-1].id).val();
+                    const context = {
+                        'name': 'currentQuestion', 
+                        'lifespan': 5, 
+                        'parameters': snap.child(paperQuestions[questionNumber-1].id).val()
+                    };
+                    console.log('correct answer: ' + currentQuestion.answer )
+                    agent.setContext(context)
+                    resolve(currentQuestion);
+                });
+            }else{
+                return resolve(false);
+            }
+        }
+    );
+    
+    function formQuestion(questionNumber,currentQuestion) {
+        const speech = `
+        Question ${questionNumber}:  ${currentQuestion.question}.
+        Option 1:  ${currentQuestion.a}.
+        Option 2:  ${currentQuestion.b}.
+        Option 3:  ${currentQuestion.c}.
+        Option 4:  ${currentQuestion.d}.
+        What is your option?
+        `;
+        return speech;
+    }
+    
+    function checkStudentAnswer(agent){
+        var paper = agent.getContext('paper').parameters;
+        var paperQuestions = paper.questions;
+        var answer = param.inputAnswer;
+        var currentQuestion = agent.getContext('currentquestion').parameters;
+        var checkAnswerContext = agent.getContext('checkanswercontext').parameters;
+        console.log("stu answer: " + answer)
+        console.log("correct answer: " + currentQuestion.answer)
+        console.log("questionNumber: " + checkAnswerContext.questionNumber)
+        var speech, postData;
+
+        if(answer === currentQuestion.answer.toUpperCase()){
+            speech = `Answer correct! Moving on to the next question.`;
+            checkAnswerContext.questionAnswerStatus = "correct";
+            
+            if(checkAnswerContext.questionTryCount === 0){
+                checkAnswerContext.score = checkAnswerContext.score + currentQuestion.marks;
+            }
+            
+            checkAnswerContext.questionNumber++;
+        }else{
+            speech = `Answer incorrect! try again?`;
+            checkAnswerContext.questionAnswerStatus  = "wrong";
+        }
+        
+        if(checkAnswerContext.questionNumber === checkAnswerContext.preQuestionNumber){
+            checkAnswerContext.questionTryCount++;
+        }
+        
+        postData = {
+            status: checkAnswerContext.questionAnswerStatus,
+            stuAns: answer,
+            tryCount: checkAnswerContext.questionTryCount
+        }
+        //updateQuestionScore(postData,paper.name, checkAnswerContext.preQuestionNumber);
+        
+        if(checkAnswerContext.questionNumber <= Object.keys(paperQuestions).length){
+            if(checkAnswerContext.questionAnswerStatus === "correct"){
+                checkAnswerContext.questionTryCount = 0;
+            }
+            agent.clearContext('checkanswercontext')
+            const context = {
+                'name': 'checkanswercontext', 
+                'lifespan': 5, 
+                'parameters': checkAnswerContext
+            };
+            agent.setContext(context)
+            return getFBQuestions(agent,checkAnswerContext.questionNumber)
+            .then(currentQuestion => {
+                return agent.add(speech + formQuestion(checkAnswerContext.questionNumber,currentQuestion));
+            });
+        }else{
+            //updatePaperProperties(paper.name,checkAnswerContext.score);
+            return agent.add("Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore);
+        }
+    }
+    
+    function updateQuestionScore(postData, paperkey, questionNumber){
+        var hwref = homework.child(paperkey + "/questions/" + (questionNumber - 1));
+        hwref.update(postData);
+    }
+
+    function updatePaperProperties(paperkey,score){
+        homework.child(paperkey).update({
+            score: score,
+            attempts: paperAttempts + 1,
+            status: "completed"
+        })
+    }
+    
+    let intentMap = new Map();
+    intentMap.set(BEGIN_HOMEWORK_INTENT, beginHomeworkSession);
+    intentMap.set(BEGIN_QUESTION_INTENT, beginQuestion);
+    intentMap.set(CHECK_ANSWER_INTENT, checkStudentAnswer);
+    agent.handleRequest(intentMap);
+});
+
 
 // app.intent(BEGIN_HOMEWORK_INTENT, (conv, {paperName}) => {
 //     conv.data.paperName = paperName;
@@ -133,7 +321,7 @@ const ASK_ANYTHING_INTENT = 'Ask Anything';
 
 //     var questionNumber = conv.data.questionNumber;   
 //     var paperQuestions = conv.data.currentPaper.questions;
-    
+
 //     if(questionNumber === conv.data.preQuestionNumber){
 //         conv.data.questionTryCount++;
 //     }
@@ -180,22 +368,22 @@ const ASK_ANYTHING_INTENT = 'Ask Anything';
 //     const intent = conv.intent;
 //     // intent contains the name of the intent
 //     // you defined in the Intents area of Dialogflow
-    
+
 //     switch (intent) {
 //         case WELCOME_INTENT:{
 //             conv.ask('Sorry, i didnt get that, please try again;');
 //             break;
 //         }
-        
+
 //         case BEGIN_HOMEWORK_INTENT:{
 //             const paperName = conv.arguments.get("paperName");
 //             conv.ask(`I didn't get that`);
 //             break;
 //         }
-        
+
 //         // case BEGIN_QUESTION_INTENT:
 //         // break;
-        
+
 //         // case CHECK_ANSWER_INTENT:
 //         // break;
 //     }
@@ -214,58 +402,3 @@ const ASK_ANYTHING_INTENT = 'Ask Anything';
 // });
 
 //exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
-const {WebhookClient} = require('dialogflow-fulfillment');
-exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
-    const agent = new WebhookClient({ request, response });
-    console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
-    let conv = agent.conv();
-
-    var paperName,currentPaper,currentPaperRef;
-    var score;
-
-    const param = request.body.result.parameters;
-
-    function beginHomeworkSession(agent){
-        console.log("Line one: " + param.paperName);
-        paperName = param.paperName;
-        var speech = `Hang on, searching for paper ${paperName}.`;
-        return getPaper(paperName).
-        then(currentPaperName => {
-            console.log("paper name:" + currentPaperName)
-            if(currentPaperName === false){       
-                return agent.add(speech + `Sorry, I couldn\'t find paper ${currentPaperName} . Please try again.`);
-            }else{
-                score = 0;
-                return agent.add(speech + `Ok, found ${currentPaperName}. Would you like to start on question 1?`);
-            }
-        })
-    }
-
-    const getPaper = (paperName) => new Promise(resolve => {
-        var paper = false;
-        homework.once('value',snapshot=>{
-            snapshot.forEach(snap => {
-                console.log(snap.val().name)
-                console.log(paperName)
-                if(snap.val().name.includes(paperName)){
-                    var hwref = homework.child(snap.key).toString();
-                    currentPaperRef = hwref.replace('https://deskmate2018.firebaseio.com', '');
-                    currentPaper = snap;
-                    paperName = snap.val().name;
-                    console.log("paper found !");
-                    paper = snap.val().name;
-                }
-            })
-            console.log(paper)
-            resolve(paper);
-        })
-    });
-
-    let intentMap = new Map();
-    //intentMap.set('Default Welcome Intent', welcome);
-    //intentMap.set('Default Fallback Intent', fallback);
-    intentMap.set(BEGIN_HOMEWORK_INTENT, beginHomeworkSession);
-    intentMap.set(BEGIN_QUESTION_INTENT, beginQuestion);
-    intentMap.set(CHECK_ANSWER_INTENT, googleAssistantHandler);
-    agent.handleRequest(intentMap);
-});

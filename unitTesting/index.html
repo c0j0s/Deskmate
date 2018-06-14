@@ -40,17 +40,149 @@ homework.once('value',snapshot=>{
 						var paperQuestions = snap.val().questions;
 						//conv.data.paperQuestions = paperQuestions;
 						console.log(paperQuestions);
-						questionDB.once('value', snap => {
-							var currentQuestion = snap.child(paperQuestions[3-1].id).val();
-							var answer = snap.child("0001").answer;
-								//resolve(currentQuestion);
-							console.log(snap.child("0003").val().answer);
-						});
+
+						var contexts = [
+			{
+				"name": "doingquestion",
+				"parameters": {
+					"paperName.original": "",
+					"paperName": "1",
+					"questionNumber.original": "",
+					"questionNumber": ""
+				},
+				"lifespan": 5
+			},
+			{
+				"name": "paper",
+				"parameters": {
+					"paperName.original": "",
+					"paperName": "1",
+					"questions": {
+						"0": "0001",
+						"1": "0002",
+						"2": "0003",
+						"3": "0004"
+					},
+					"name": "paper1",
+					"questionNumber.original": "",
+					"questionNumber": "",
+					"attempts": 2
+				},
+				"lifespan": 4
+			},
+			{
+				"name": "actions_capability_screen_output",
+				"parameters": {
+					"paperName.original": "",
+					"paperName": "1",
+					"questionNumber.original": "",
+					"questionNumber": ""
+				},
+				"lifespan": 0
+			},
+			{
+				"name": "doinghomework",
+				"parameters": {
+					"paperName.original": "",
+					"paperName": "1",
+					"questionNumber.original": "",
+					"questionNumber": ""
+				},
+				"lifespan": 4
+			}
+									]
+					
+								var paper;
+								contexts.filter(con =>{
+									if(con.name === 'paper'){
+										paper = con.parameters;
+									}
+								});
+								console.log("2: " + paper.paperName);
+								var paperQuestions = paper.questions;
+								console.log("3: " + paperQuestions[0].id);
+							
+								
+								console.log(Object.keys(paperQuestions).length);
+
+						// questionDB.once('value', snap => {
+						// 	var currentQuestion = snap.child(paperQuestions[3-1].id).val();
+						// 	var answer = snap.child("0001").answer;
+						// 		//resolve(currentQuestion);
+						// 	console.log(snap.child("0003").val().answer);
+						// });
 				}
 		});
 })
+var agent;
 
-});
+function checkStudentAnswer(agent){
+        var paper = agent.getContext('paper').parameters;
+        var paperQuestions = paper.questions;
+        var answer = param.answer;
+        var currentQuestion = agent.getContext('currentQuestion').parameters;
+        var checkAnswerContext = agent.getContext('checkAnswerContext').parameters;
+
+        console.log(currentQuestion.answer)
+        var speech, postData;
+
+        if(answer === currentQuestion.answer.toUpperCase()){
+            speech = `Answer correct! <break time="1s"/> Moving on to the next question.`;
+            checkAnswerContext.questionAnswerStatus = "correct";
+            
+            if(checkAnswerContext.questionTryCount === 0){
+                checkAnswerContext.score = checkAnswerContext.score + currentQuestion.marks;
+            }
+            
+            checkAnswerContext.questionNumber++;
+        }else{
+            speech = `Answer incorrect! <break time="1s"/> try again?`;
+            checkAnswerContext.questionAnswerStatus  = "wrong";
+        }
+        
+        if(checkAnswerContext.questionNumber === checkAnswerContext.preQuestionNumber){
+            checkAnswerContext.questionTryCount++;
+        }
+        
+        postData = {
+            status: checkAnswerContext.questionAnswerStatus,
+            stuAns: answer,
+            tryCount: checkAnswerContext.questionTryCount
+        }
+        updateQuestionScore(postData,paper.name, checkAnswerContext.preQuestionNumber);
+        
+        if(checkAnswerContext.questionNumber <= Object.keys(paperQuestions).length){
+            if(checkAnswerContext.questionAnswerStatus === "correct"){
+                checkAnswerContext.questionTryCount = 0;
+            }
+            agent.clearContext('checkAnswerContext')
+            agent.setContext('checkAnswerContext', 5, checkAnswerContext)
+            return getFBQuestions(agent,checkAnswerContext.questionNumber)
+            .then(currentQuestion => {
+                return agent.add(speech + formQuestion(checkAnswerContext.questionNumber,currentQuestion));
+            });
+        }else{
+            updatePaperProperties(paper.name,checkAnswerContext.score);
+            return agent.add("Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore);
+        }
+    }
+    
+    function updateQuestionScore(postData, paperName, questionNumber){
+        var hwref = homework.child(paperName + "/questions/" + (questionNumber - 1));
+        hwref.update(postData);
+    }
+
+    function updatePaperProperties(paperName,score){
+        homework.child(paperName).update({
+            score: score,
+            attempts: paperAttempts + 1,
+            status: "completed"
+        })
+    }
+
+
+
+				});
 </script>
 </body>
 </html>
