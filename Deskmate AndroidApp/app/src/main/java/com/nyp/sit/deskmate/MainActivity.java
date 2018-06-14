@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         speechRecognizer.cancel();
                         speechRecognizer.stopListening();
-                        //asyncTask.cancel(true);
+                        asyncTask.cancel(true);
                         textToSpeech.stop();
                     }catch (Exception e){
 
@@ -425,57 +425,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        asyncTask = new AsyncTask<AIRequest, Void, AIResponse>() {
-//            @Override
-//            protected AIResponse doInBackground(AIRequest... requests) {
-//                final AIRequest aiRequest = new AIRequest(text);
-//                try {
-//                    final AIResponse response = aiDataService.request(aiRequest);
-//                    return response;
-//                } catch (AIServiceException e) {
-//                    e.printStackTrace();
-//                }
-//                return null;
-//            }
-//            @Override
-//            protected void onPostExecute(AIResponse aiResponse) {
-//                if (aiResponse != null) {
-//                    // process aiResponse here
-//                    Result result = aiResponse.getResult();
-//                    Fulfillment fulfillment = result.getFulfillment();
-//                    String speech = fulfillment.getSpeech();
-//
-//                    if (speech.equalsIgnoreCase("end_session")) {
-//                        keepSession = false;
-//                        startTts("OK, wake me again if you need me.");
-//                    } else {
-//                        keepSession = true;
-//                        startTts(speech);
-//                    }
-//                }
-//            }
-//
-//        };
-
-//        asyncTask.execute();
-
-        // TODO: Start NLU
-        Runnable runnable = new Runnable() {
+        asyncTask = new AsyncTask<AIRequest, Void, AIResponse>() {
             @Override
-            public void run() {
-                AIRequest aiRequest = new AIRequest();
-                aiRequest.setQuery(text);
-
+            protected AIResponse doInBackground(AIRequest... requests) {
+                final AIRequest aiRequest = new AIRequest(text);
                 try {
-                    AIResponse aiResponse = aiDataService.request(aiRequest);
-                    Log.e("deskmate",aiResponse.toString());
+                    final AIResponse response = aiDataService.request(aiRequest);
+                    return response;
+                } catch (AIServiceException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+            @Override
+            protected void onPostExecute(AIResponse aiResponse) {
+                if (aiResponse != null) {
+                    // process aiResponse here
                     Result result = aiResponse.getResult();
-                    Log.e("deskmate",result.toString());
                     Fulfillment fulfillment = result.getFulfillment();
-                    //Log.e("deskmate",result.getFulfillment().toString());
-                    String speech = "test";//fulfillment.getSpeech();
-                    //Log.e("deskmate",result.getFulfillment().getData().toString());
-
+                    String speech = fulfillment.getSpeech();
 
                     if (speech.equalsIgnoreCase("end_session")) {
                         keepSession = false;
@@ -484,13 +452,45 @@ public class MainActivity extends AppCompatActivity {
                         keepSession = true;
                         startTts(speech);
                     }
-
-                } catch (AIServiceException e) {
-                    e.printStackTrace();
                 }
             }
+
         };
-        Threadings.runInBackgroundThread(runnable);
+
+        asyncTask.execute();
+//
+//        // TODO: Start NLU
+//        Runnable runnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                AIRequest aiRequest = new AIRequest();
+//                aiRequest.setQuery(text);
+//
+//                try {
+//                    AIResponse aiResponse = aiDataService.request(aiRequest);
+//                    Log.e("deskmate",aiResponse.toString());
+//                    Result result = aiResponse.getResult();
+//                    Log.e("deskmate",result.toString());
+//                    Fulfillment fulfillment = result.getFulfillment();
+//                    //Log.e("deskmate",result.getFulfillment().toString());
+//                    String speech = "test";//fulfillment.getSpeech();
+//                    //Log.e("deskmate",result.getFulfillment().getData().toString());
+//
+//
+//                    if (speech.equalsIgnoreCase("end_session")) {
+//                        keepSession = false;
+//                        startTts("OK, wake me again if you need me.");
+//                    } else {
+//                        keepSession = true;
+//                        startTts(speech);
+//                    }
+//
+//                } catch (AIServiceException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        };
+//        Threadings.runInBackgroundThread(runnable);
     }
 
     private void startTts(String text) {
