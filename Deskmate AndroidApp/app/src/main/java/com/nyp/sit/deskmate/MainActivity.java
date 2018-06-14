@@ -20,16 +20,20 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.gson.JsonElement;
+
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import ai.api.AIConfiguration;
 import ai.api.AIDataService;
 import ai.api.AIServiceException;
+import ai.api.android.AIConfiguration;
 import ai.api.model.AIRequest;
 import ai.api.model.AIResponse;
 import ai.api.model.Fulfillment;
@@ -308,9 +312,9 @@ public class MainActivity extends AppCompatActivity {
         //String clientAccessToken = "4c166b1b0569439e82c9bf8bd60ee69b";
         String clientAccessToken = "bc35556fc5c44261a4828d8c301b619e";
         AIConfiguration aiConfiguration = new AIConfiguration(clientAccessToken,
-                AIConfiguration.SupportedLanguages.English);
+                AIConfiguration.SupportedLanguages.English,
+                AIConfiguration.RecognitionEngine.System);
         aiDataService = new AIDataService(aiConfiguration);
-
 
     }
 
@@ -442,9 +446,11 @@ public class MainActivity extends AppCompatActivity {
                 if (aiResponse != null) {
                     // process aiResponse here
                     Result result = aiResponse.getResult();
+                    Log.e("DM", result.toString());
                     Fulfillment fulfillment = result.getFulfillment();
+                    Log.e("DM", result.getFulfillment().getMessages().get(0).toString());
                     String speech = fulfillment.getSpeech();
-
+                    Log.e("DM", speech);
                     if (speech.equalsIgnoreCase("end_session")) {
                         keepSession = false;
                         startTts("OK, wake me again if you need me.");
@@ -458,7 +464,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         asyncTask.execute();
-//
+
 //        // TODO: Start NLU
 //        Runnable runnable = new Runnable() {
 //            @Override
