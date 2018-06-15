@@ -19,10 +19,22 @@ p{
 	margin-bottom: 10px;
 }
 .btn{
-	font-size: 13px;
-	margin-left: 15px;
-	margin-bottom: 20px;
+	font-size: 15px;
+	margin-top: 10px;
+	float:right;
 }
 .float1{
 	float:left;
+}
+.score{
+	float:right;
+}
+
+.inline{
+	display:-webkit-inline-box;
+	width: 365px;
+}
+
+.scrollmenu{
+	overflow: auto;
 }

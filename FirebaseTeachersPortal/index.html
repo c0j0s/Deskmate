@@ -38,7 +38,7 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
         <div class="modal-body">
-          Paper Name:<input type="text" name="papername" id = "pName"></input>
+          Paper Name:<input class="form-control input-sm" type="text" name="papername" id = "pName"></input>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal" onclick="writetoDB()">Submit</button>
@@ -147,12 +147,12 @@
 			data.forEach(function(childSnapshot){
 				var userkey = childSnapshot.key;
 				//console.log(childSnapshot);
-					$('<div class= "card bg-light mb-3" id="style"><div id="heading2" class="card-header"><b>'+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button></div><div class="card-body" id="details'+userkey+'"></div></div><p></p>').appendTo("#data");
+					$('<div class= "card bg-light mb-3"><div id="heading2" class="card-header"><b>Name: '+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button></div><div class="card-body scrollmenu"><div class="card-deck child inline" id="details'+userkey+'"></div></div></div><p></p>').appendTo("#data");
 						childSnapshot.child("homework").forEach(function(hwsnapshot){
 						//console.log(childSnapshot.val());
-								$('<div id="'+hwsnapshot.key+'"><div class="heading4">'+hwsnapshot.val().name+'</div><div>Homework Score: <b>'+hwsnapshot.val().score+'</b></div></div>').appendTo('#details'+userkey);
+								$('<div class="card text-white bg-secondary mb-3 one"><div class="heading4 card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/100</b></div></div><div id="'+hwsnapshot.key+'" class="card-body"></div></div></div>').appendTo('#details'+userkey);
 								hwsnapshot.child("questions").forEach(function(qnssnapshot){
-									$('<div id="Q'+qnssnapshot.val().id+hwsnapshot.key+'" class="card-text"><p class="container-fluid" class="heading3">No of Tries: '+qnssnapshot.val().tryCount+'</p><p class="container-fluid" class="heading3">Student Answer: '+qnssnapshot.val().stuAns+'</p></div>').appendTo('#'+hwsnapshot.key);
+									$('<div id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="container-fluid heading3 card-text">No of Tries: '+qnssnapshot.val().tryCount+'</p><p class="container-fluid heading3 card-text" >Student Answer: '+qnssnapshot.val().stuAns+'</p></div>').appendTo('#'+hwsnapshot.key);
 									questionDb = firebase.database().ref('question');
 									questionDb.once('value', getQues)
 									function getQues(question){
@@ -161,7 +161,7 @@
 										question.forEach(function(quesSnapshot){
 											var qesid = quesSnapshot.key;
 												if( qesid === qnssnapshot.val().id){
-													$('<p class="heading3 card-title">'+quesSnapshot.val().question+'</p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
+													$('<p class="heading3 card-text"><b>'+quesSnapshot.val().question+'</b></p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
 													$("#"+userkey).on('click',function() {
 														if(curruser == $(this).data("user")){
 															qnsid.push(qesid);
