@@ -4,17 +4,35 @@ const {dialogflow} = require('actions-on-google');
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
-const homework = admin.database().ref('/profile/0001/homework');
+const userDB = admin.database().ref('/profile/0001')
+const homeworkDB = admin.database().ref('/profile/0001/homework');
 const questionDB = admin.database().ref('/question');
+const messageDB = admin.database().ref('/messages');
 
 const app = dialogflow({debug: false});
 
 const WELCOME_INTENT = 'Default Welcome Intent';
 const FALLBACK_INTENT = 'Default Fallback Intent';
+
+const GET_HOMEWORKS = 'Get Homeworks';
+
 const BEGIN_HOMEWORK_INTENT = 'Begin Homework Session';
-const BEGIN_QUESTION_INTENT = 'Begin Question';
+const START_HOMEWORK_ON_QUESTION_INTENT = 'Start specific paper and question';
+
+const CHANGE_HOMEWORK_INTENT = 'Change Homework';
+const CHANGE_HOMEWORK_YES_INTENT = 'Change Homework - yes';
+
+const BEGIN_QUESTION_ONE_INTENT = 'Begin Question - Start Question 1';
+const BEGIN_QUESTION_OTHER_INTENT = 'Begin Question - Start Other Question';
+
 const CHECK_ANSWER_INTENT = 'Check Student Answer';
+const CHECK_ANSWER_NEXT = 'Check Student Answer - next';
+
 const ASK_ANYTHING_INTENT = 'Ask Anything';
+
+const GET_MESSAGES = 'Get My Messages';
+const READ_MESSAGES_YES = 'Get My Messages - yes';
+const SEND_MESSAGES = 'Send Message';
 
 const {WebhookClient} = require('dialogflow-fulfillment');
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
@@ -24,17 +42,110 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     
     const param = request.body.result.parameters;
     
+    //============================================================================================================================================
+    // INTENT METHODS
+    //============================================================================================================================================
+    
+    function welcomeUser(agent){
+        return new Promise(resolve => {
+            userDB.once('value',snapshot=>{
+                resolve(snapshot.val());
+            })
+        }).then(snapshot =>{
+            const context = {
+                'name': 'user', 
+                'lifespan': 30, 
+                'parameters': snapshot
+            };
+            agent.setContext(context)
+            console.log('login user: ' + snapshot.name)
+            return agent.add(`Welcome back ${snapshot.name}. do you want to start your homework now?`)
+        }).catch(error => {
+            console.log(error)
+            return agent.add(`Welcome back. do you want to start your homework now?`)
+        });
+    }
+
+    function getUserHomeworks(agent){
+        return new Promise(resolve => {
+            var listOfPaper = {
+                completed: [],
+                notCompleted: []
+            }
+            homeworkDB.once('value',snapshot=>{
+                snapshot.forEach(paper =>{
+                    paper = paper.val();
+                    if(paper.attempts === 0){
+                        listOfPaper.notCompleted.push(paper.name)
+                    }else{
+                        listOfPaper.completed.push(paper.name)
+                    }
+                })
+                resolve(listOfPaper)
+            })
+        }).then(listOfPaper =>{
+            var speech;
+            if(listOfPaper.notCompleted.length !== 0){
+                speech = `Currently you have ${listOfPaper.notCompleted.length} not completed homework, they are `
+                listOfPaper.notCompleted.forEach((item,index) => {
+                    if((listOfPaper.notCompleted.length - 1) === index){
+                        speech = speech.slice(0, -2);
+                        speech = speech + ' and ' + item + '.'
+                    }else{
+                        speech = speech + item + ', '
+                    }
+                })
+            }else{
+                speech = `Currently you have no new homework.`
+            }
+            console.log(speech)
+            return agent.add(speech)
+        }).catch(error => {
+            console.log(error)
+            return agent.add(`Sorry, i couldn't find your homework.`)
+        });
+    }
+
     function beginHomeworkSession(agent){
         var paperName = param.paperName;
         var speech = `Hang on, searching for paper ${paperName}.`;
         return getPaper(agent, paperName).
-        then(currentPaperName => {
-            if(currentPaperName === false){       
-                return agent.add(speech + ` Sorry, I couldn't find paper ${currentPaperName} . Please try again.`);
+        then(paperparam => {
+            if(paperparam === false){       
+                return agent.add(speech + ` Sorry, I couldn't find paper ${paperName} . Please try again.`);
             }else{
-                return agent.add(speech + ` Ok, found ${currentPaperName}. Would you like to start on question 1?`);
+                console.log('paper attempts: ' + paperparam.attempts)
+                if(paperparam.attempts === 0){
+                    speech = speech + ` Ok, found ${paperparam.name}. Would you like to start on question 1?`;
+                }else{
+                    speech = speech + ` Ok, found ${paperparam.name}. You have previously attempted this paper, do you want to redo this paper from question 1 again?`;
+                }
+                return agent.add(speech);
             }
         })
+    }
+
+    function changeHomework(agent){
+        var paperName = param.paperName;
+        var speech = `Hang on, searching for paper ${paperName}.`;
+        return getPaper(agent, paperName).
+        then(paperparam => {
+            if(paperparam === false){       
+                return agent.add(speech + ` Sorry, I couldn't find paper ${paperName} . Please try again.`);
+            }else{
+                console.log('paper attempts: ' + paperparam.attempts)
+                if(paperparam.attempts === 0){
+                    speech = speech + ` Ok, found ${paperparam.name}. Would you like to start on this paper?`;
+                }else{
+                    speech = speech + ` Ok, found ${paperparam.name}. You have previously attempted this paper, do you want to redo this paper again?`;
+                }
+                return agent.add(speech);
+            }
+        })
+    }
+
+    function confirmChangeHomework(agent){
+        beginQuestion(agent)
     }
 
     function beginQuestion(agent) {
@@ -43,7 +154,6 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         if(questionNumber === ""){
             questionNumber = 1;
         }
-        console.log("intentQuestionNumber: " + questionNumber)
         return getFBQuestions(agent,questionNumber)
         .then(currentQuestion => {
             if(currentQuestion === false){
@@ -69,99 +179,46 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         });
     }
     
-    const getPaper = (agent, paperName) => new Promise(resolve => {
-        var paper = false;
-        homework.once('value',snapshot=>{
-            snapshot.forEach(snap => {
-                console.log("name: " + snap.val().name)
-                if(snap.val().name.includes(paperName)){
-                    var paperparam = snap.val();
-                    paperparam.key = snap.key;
-                    console.log('name: ' + paperparam.name + " key: " + paperparam.key)
-                    const context = {
-                        'name': 'paper', 
-                        'lifespan': 30, 
-                        'parameters': paperparam,
-                    };
-                    agent.setContext(context);
-                    paper = snap.val().name;
-                }
-            })
-            resolve(paper);
-        })
-    });
-    
-    const getFBQuestions = (agent, questionNumber) => new Promise(
-        resolve => {
-            var paper = agent.getContext('paper').parameters;
-            var paperQuestions = paper.questions;
-
-            if(questionNumber <= Object.keys(paperQuestions).length){
-                return questionDB.once('value', snap => {
-                    agent.clearContext('currentQuestion');
-                    var currentQuestion = snap.child(paperQuestions[questionNumber-1].id).val();
-                    const context = {
-                        'name': 'currentQuestion', 
-                        'lifespan': 5, 
-                        'parameters': snap.child(paperQuestions[questionNumber-1].id).val()
-                    };
-                    console.log('correct answer: ' + currentQuestion.answer )
-                    agent.setContext(context)
-                    resolve(currentQuestion);
-                });
-            }else{
-                return resolve(false);
-            }
-        }
-    );
-    
-    function formQuestion(questionNumber,currentQuestion) {
-        const speech = `
-        Question ${questionNumber}:  ${currentQuestion.question}.
-        Option 1:  ${currentQuestion.a}.
-        Option 2:  ${currentQuestion.b}.
-        Option 3:  ${currentQuestion.c}.
-        Option 4:  ${currentQuestion.d}.
-        What is your option?
-        `;
-        return speech;
-    }
-    
     function checkStudentAnswer(agent){
         var paper = agent.getContext('paper').parameters;
         var paperQuestions = paper.questions;
         var answer = param.inputAnswer;
         var currentQuestion = agent.getContext('currentquestion').parameters;
         var checkAnswerContext = agent.getContext('checkanswercontext').parameters;
-        console.log("stu answer: " + answer)
-        console.log("correct answer: " + currentQuestion.answer)
-        console.log("questionNumber: " + checkAnswerContext.questionNumber)
         var speech, postData;
 
+        //update previous question number
+        checkAnswerContext.preQuestionNumber = checkAnswerContext.questionNumber;
+
+        //check student answer with firebase answer
         if(answer === currentQuestion.answer.toUpperCase()){
-            speech = `Answer correct! Moving on to the next question.`;
+            speech = `Answer correct! Moving on to the next question. `;
             checkAnswerContext.questionAnswerStatus = "correct";
             
+            //update total score if only question correct for first try
             if(checkAnswerContext.questionTryCount === 0){
                 checkAnswerContext.score = checkAnswerContext.score + currentQuestion.marks;
             }
             
+            //update question number to proceed to next question
             checkAnswerContext.questionNumber++;
         }else{
-            speech = `Answer incorrect! try again?`;
+            speech = `Answer incorrect! try again? `;
             checkAnswerContext.questionAnswerStatus  = "wrong";
         }
         
         if(checkAnswerContext.questionNumber === checkAnswerContext.preQuestionNumber){
+            //update try count if redo question
             checkAnswerContext.questionTryCount++;
         }
         
+        //question data to update 
         postData = {
             status: checkAnswerContext.questionAnswerStatus,
             stuAns: answer,
             tryCount: checkAnswerContext.questionTryCount
         }
-        //updateQuestionScore(postData,paper.name, checkAnswerContext.preQuestionNumber);
+        updateQuestionScore(postData,paper.key, checkAnswerContext.preQuestionNumber);
         
         if(checkAnswerContext.questionNumber <= Object.keys(paperQuestions).length){
             if(checkAnswerContext.questionAnswerStatus === "correct"){
@@ -179,226 +236,227 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 return agent.add(speech + formQuestion(checkAnswerContext.questionNumber,currentQuestion));
             });
         }else{
-            //updatePaperProperties(paper.name,checkAnswerContext.score);
-            return agent.add("Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore);
+            updatePaperProperties(paper.key,checkAnswerContext.score,paper.attempts + 1);
+            return agent.add("Answer correct! Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore);
         }
     }
+
+    function checkStudentAnswerNext(agent){
+        var paper = agent.getContext('paper').parameters;
+        var paperQuestions = paper.questions;
+        var answer = param.inputAnswer;
+        var checkAnswerContext = agent.getContext('checkanswercontext').parameters;
+        var speech;
+        var change = true;
+        var questionNumber = param.questionNumber;
+        console.log('moving on: ' + questionNumber)
+
+        //update previous question number
+        checkAnswerContext.preQuestionNumber = checkAnswerContext.questionNumber;
+        speech = `Ok, Moving on to the next question. `;
+        if(questionNumber === ''){
+            checkAnswerContext.questionNumber++;
+        }else{
+            if(checkAnswerContext.questionNumber >= questionNumber){
+                speech = `Sorry please choose a question after current question`;
+                change = false;
+            }else{
+                checkAnswerContext.questionNumber = questionNumber;
+            }
+        }
+
+        if(change){
+            if(checkAnswerContext.questionNumber <= Object.keys(paperQuestions).length){
+                return getFBQuestions(agent,checkAnswerContext.questionNumber)
+                .then(currentQuestion => {
+                    return agent.add(speech + formQuestion(checkAnswerContext.questionNumber,currentQuestion));
+                });
+            }else{
+                updatePaperProperties(paper.key,checkAnswerContext.score,paper.attempts + 1);
+                return agent.add("Answer correct! Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore);
+            }
+        }else{
+            agent.add(speech)
+        }
+    }
+
+    function getMessages(agent){
+        return new Promise(resolve => {
+            console.log('function trigged 4')
+            var userID = '0001'
+            var senderName = param.senderName;
+            if(senderName !== ''){
+                console.log('sender: '+ senderName)
+            }
+
+            var userMessageList = [];
+            messageDB.once('value', snap =>{
+                snap.forEach(message =>{
+                    message = message.val()
+                    if(message.to === userID){
+                        if(message.read === false){
+                            if(senderName !== ''){
+                                if(message.senderName.toLowerCase().includes(senderName.toLowerCase())){
+                                    userMessageList.push(message)
+                                }
+                            }else{
+                            userMessageList.push(message)
+                            }
+                        }
+                    }
+                })
+                resolve(userMessageList)
+            })
+        }).then(userMessageList => {
+            var speech;
+            var senderName = param.senderName;
+            if(userMessageList.length > 0){
+                speech = `You have ${userMessageList.length} new messages`
+                if(senderName !== ''){
+                    speech = speech + ` from ${senderName}`
+                }
+                speech = speech + `, do you want me to read them?`
+                
+                agent.clearContext('getmymessages-followup')
+                const context = {
+                    'name': 'getmymessages-followup', 
+                    'lifespan': userMessageList.length, 
+                    'parameters': userMessageList
+                };
+                agent.setContext(context)
+            }else{
+                speech = `you have no new messages`
+                if(senderName !== ''){
+                    speech = speech + ` from ${senderName}`
+                }
+            }
+            console.log(speech)
+            return agent.add(speech)
+        }).catch(error=>{
+            console.log(error)
+            return agent.add(error)
+        })
+    }
+
+    function readMessages(agent){
+        var message = agent.getContext('getmymessages-followup').parameters
+        var speech;
+
+        message.forEach((item,index)=> {
+            console.log('message: ' + item);
+            speech = speech + 'Message ' + index + ': from:' + item.senderName + '. message:' + item.message + '. ';
+        })
+
+        agent.add(speech);
+    }
+
+    function sendMessage(agent){
+
+    }
+
+    function defaultFallback(agent){
+        agent.add('fall back: intent not implemented')
+    }
+    //============================================================================================================================================
+    // GENERIC METHODS
+    //============================================================================================================================================
     
+    //retrieving paper details from firebase
+    const getPaper = (agent, paperName) => new Promise(resolve => {
+        var paperparam = false;
+        homeworkDB.once('value',snapshot=>{
+            snapshot.forEach(snap => {
+                if(snap.val().name.includes(paperName)){
+                    paperparam = snap.val();
+                    paperparam.key = snap.key;
+                    const context = {
+                        'name': 'paper', 
+                        'lifespan': 30, 
+                        'parameters': paperparam,
+                    };
+                    agent.setContext(context);
+                }
+            })
+            resolve(paperparam);
+        })
+    });
+
+    //retrieving question details from firebase
+    const getFBQuestions = (agent, questionNumber) => new Promise(
+        resolve => {
+            var paper = agent.getContext('paper').parameters;
+            var paperQuestions = paper.questions;
+
+            if(questionNumber <= Object.keys(paperQuestions).length){
+                return questionDB.once('value', snap => {
+                    agent.clearContext('currentQuestion');
+                    var currentQuestion = snap.child(paperQuestions[questionNumber-1].id).val();
+                    const context = {
+                        'name': 'currentQuestion', 
+                        'lifespan': 5, 
+                        'parameters': snap.child(paperQuestions[questionNumber-1].id).val()
+                    };
+                    agent.setContext(context)
+                    resolve(currentQuestion);
+                });
+            }else{
+                return resolve(false);
+            }
+        }
+    );
+
+    //generate question speech format
+    function formQuestion(questionNumber,currentQuestion) {
+        const speech = `
+        Question ${questionNumber}:  ${currentQuestion.question}
+        A :  ${currentQuestion.a}.
+        B :  ${currentQuestion.b}.
+        C :  ${currentQuestion.c}.
+        D :  ${currentQuestion.d}.
+        What is your option?
+        `;
+        return speech;
+    }
+
+    //for updating the status of each individual questions
     function updateQuestionScore(postData, paperkey, questionNumber){
-        var hwref = homework.child(paperkey + "/questions/" + (questionNumber - 1));
+        var hwref = homeworkDB.child(paperkey + "/questions/" + (questionNumber - 1));
         hwref.update(postData);
     }
 
-    function updatePaperProperties(paperkey,score){
-        homework.child(paperkey).update({
+    //for updating the status of paper
+    function updatePaperProperties(paperkey,score,paperAttempts){
+        homeworkDB.child(paperkey).update({
             score: score,
             attempts: paperAttempts + 1,
-            status: "completed"
+            status: "completed",
+            datetimeCompleted: new Date()
         })
     }
     
+    //============================================================================================================================================
+    // INTENT FUNCTION MAPPING
+    //============================================================================================================================================
+
     let intentMap = new Map();
+    intentMap.set(WELCOME_INTENT, welcomeUser)
     intentMap.set(BEGIN_HOMEWORK_INTENT, beginHomeworkSession);
-    intentMap.set(BEGIN_QUESTION_INTENT, beginQuestion);
+
+    intentMap.set(GET_HOMEWORKS, getUserHomeworks)
+
+    intentMap.set(CHANGE_HOMEWORK_INTENT, changeHomework);
+    intentMap.set(CHANGE_HOMEWORK_YES_INTENT, confirmChangeHomework);
+    intentMap.set(START_HOMEWORK_ON_QUESTION_INTENT, defaultFallback);
+
+    intentMap.set(BEGIN_QUESTION_ONE_INTENT, beginQuestion);
+    intentMap.set(BEGIN_QUESTION_OTHER_INTENT, beginQuestion);
+
     intentMap.set(CHECK_ANSWER_INTENT, checkStudentAnswer);
+    intentMap.set(CHECK_ANSWER_NEXT, checkStudentAnswerNext);
+
+    intentMap.set(GET_MESSAGES, getMessages);
+    intentMap.set(READ_MESSAGES_YES, readMessages)
+    intentMap.set(SEND_MESSAGES, sendMessage);
+
     agent.handleRequest(intentMap);
 });
-
-
-// app.intent(BEGIN_HOMEWORK_INTENT, (conv, {paperName}) => {
-//     conv.data.paperName = paperName;
-//     conv.ask(`<speak>Hang on, searching for paper ${paperName}!<break time="2s"/></speak>`);
-//     return getPaper(conv,paperName).
-//     then(currentPaperName => {
-//         console.log("paper name:" + currentPaperName)
-//         if(currentPaperName === false){
-//             return conv.ask(`Sorry, I couldn't find paper ${paperName} . Please try again.`);
-//         }else{
-//             conv.data.score = 0;
-//             return conv.ask(`<speak>Ok, found ${currentPaperName}. <break time="1s"/> Would you like to start on question 1?</speak>`);
-//         }
-//     })
-// });
-
-// app.intent(BEGIN_QUESTION_INTENT, (conv, {questionNumber}) => {
-//     if(questionNumber === ""){
-//         questionNumber = 1;
-//     }
-//     conv.data.questionNumber = questionNumber;
-//     return getFBQuestions(conv, questionNumber)
-//     .then(currentQuestion => {
-//         if(currentQuestion === false){
-//             return conv.ask(`Sorry, I couldn't find question ${questionNumber} . Please try again.`);
-//         }else{
-//             conv.data.questionTryCount = 0;
-//             conv.data.preQuestionNumber = 0;
-//             return conv.ask(formQuestion(questionNumber,currentQuestion));
-//         }
-//     }).catch(error => {
-//         return conv.close(error);
-//     });
-// });
-
-// const getPaper = (conv,paperName) => new Promise(resolve => {
-//     var paper = false;
-//     homework.once('value',snapshot=>{
-//         snapshot.forEach(snap => {
-//             console.log(snap.val().name)
-//             console.log(paperName)
-//             if(snap.val().name.includes(paperName)){
-//                 var hwref = homework.child(snap.key).toString();
-//                 conv.data.currentPaperRef = hwref.replace('https://deskmate2018.firebaseio.com', '');
-//                 conv.data.currentPaper = snap;
-//                 conv.data.paperName = snap.val().name;
-//                 console.log("paper found !");
-//                 paper = snap.val().name;
-//             }
-//         })
-//         console.log(paper)
-//         resolve(paper);
-//     })
-// });
-
-// const getFBQuestions = (conv, questionNumber) => new Promise(
-//     resolve => {
-//         var paper = conv.data.currentPaper;
-//         var paperQuestions = paper.questions;
-//         if(questionNumber <= Object.keys(paperQuestions).length){
-//             return questionDB.once('value', snap => {
-//                 var currentQuestion = snap.child(paperQuestions[questionNumber-1].id).val();
-//                 conv.data.currentQuestion = currentQuestion;
-//                 resolve(currentQuestion);
-//             });
-//         }else{
-//             return resolve(false);
-//         }
-//     }
-// );
-
-// const getQuestionsOnly = (conv,paperQuestions, questionNumber) => new Promise(
-//     resolve => {
-//         questionDB.once('value', snap => {
-//             var currentQuestion = snap.child(paperQuestions[questionNumber-1].id).val();
-//             conv.data.currentQuestion = currentQuestion;
-//             resolve(currentQuestion);
-//         });
-//     }
-// );
-
-
-// function formQuestion(questionNumber,currentQuestion) {
-//     const speech = `<speak>
-//     <p><s>Question ${questionNumber}: <break time="1s"/> ${currentQuestion.question}</s></p>
-//     <break time="1s"/>
-//     <p><s>Option 1: <break time="1s"/> ${currentQuestion.a}</s></p>
-//     <p><s>Option 2: <break time="1s"/> ${currentQuestion.b}</s></p>
-//     <p><s>Option 3: <break time="1s"/> ${currentQuestion.c}</s></p>
-//     <p><s>Option 4: <break time="1s"/> ${currentQuestion.d}</s></p>
-//     <break time="1s"/>
-//     <p><s>What is your option?</s></p>
-//     </speak>
-//     `;
-//     return speech;
-// }
-
-// app.intent(CHECK_ANSWER_INTENT, (conv, {answer}) => {
-//     var speech, postData;
-//     var currentQuestion = conv.data.currentQuestion;
-//     conv.data.preQuestionNumber = conv.data.questionNumber;
-//     if(answer === currentQuestion.answer.toUpperCase()){
-//         speech = `<speak>Answer correct! <break time="1s"/> Moving on to the next question</speak>`;
-//         conv.data.questionAnswerStatus = "correct";
-
-//         if(conv.data.questionTryCount === 0){
-//             conv.data.score = conv.data.score + currentQuestion.marks;
-//         }
-
-//         conv.data.questionNumber++;
-//     }else{
-//         speech = `<speak>Answer incorrect! <break time="1s"/> try again?</speak>`;
-//         conv.data.questionAnswerStatus  = "wrong";
-//     }
-
-//     var questionNumber = conv.data.questionNumber;   
-//     var paperQuestions = conv.data.currentPaper.questions;
-
-//     if(questionNumber === conv.data.preQuestionNumber){
-//         conv.data.questionTryCount++;
-//     }
-
-//     postData = {
-//         status: conv.data.questionAnswerStatus,
-//         stuAns: answer,
-//         tryCount: conv.data.questionTryCount
-//     }
-//     updateQuestionScore(conv,postData,conv.data.preQuestionNumber);
-
-//     if(questionNumber <= Object.keys(paperQuestions).length){
-//         if(conv.data.questionAnswerStatus === "correct"){
-//             conv.data.questionTryCount = 0;
-//         }
-//         return getFBQuestions(conv, questionNumber)
-//         .then(currentQuestion => {
-//             conv.ask(speech);
-//             return conv.ask(formQuestion(questionNumber,currentQuestion));
-//         });
-//     }else{
-//         updatePaperProperties(conv,conv.data.score);
-//         return conv.close("Reach the end of paper");
-//     }
-// });  
-
-// function updateQuestionScore(conv,postData,questionNumber){
-//     var hwref = admin.database().ref(conv.data.currentPaperRef).child("questions/" + (questionNumber - 1));
-//     hwref.update(postData);
-// }
-// function updatePaperProperties(conv,score){
-//     admin.database().ref(conv.data.currentPaperRef).update({
-//         score: score,
-//         attempts: 2,
-//         status: "completed"
-//     })
-// }
-
-// app.intent(ASK_ANYTHING_INTENT, (conv, {Keyword}) => {
-
-// });
-
-// app.fallback((conv) => {
-//     const intent = conv.intent;
-//     // intent contains the name of the intent
-//     // you defined in the Intents area of Dialogflow
-
-//     switch (intent) {
-//         case WELCOME_INTENT:{
-//             conv.ask('Sorry, i didnt get that, please try again;');
-//             break;
-//         }
-
-//         case BEGIN_HOMEWORK_INTENT:{
-//             const paperName = conv.arguments.get("paperName");
-//             conv.ask(`I didn't get that`);
-//             break;
-//         }
-
-//         // case BEGIN_QUESTION_INTENT:
-//         // break;
-
-//         // case CHECK_ANSWER_INTENT:
-//         // break;
-//     }
-// });
-
-// app.intent(FALLBACK_INTENT, (conv) => {
-//     conv.data.fallbackCount++;
-//     // Provide two prompts before ending game
-//     if (conv.data.fallbackCount === 1) {
-//         conv.contexts.set(DONE_YES_NO_CONTEXT, 5);
-//         conv.ask('Are you done playing Number Genie?');
-//     } else {
-//         conv.close(`Since I'm still having trouble, so I'll stop here. ` +
-//         `Let’s play again soon.`);
-//     }
-// });
-
-//exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
