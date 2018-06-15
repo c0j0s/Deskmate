@@ -132,6 +132,9 @@ getUserHomeworks()
             return 
         });
     }
+    firebase.database().ref('/messages').child('0000000001').update({
+            'read': true
+        })
 
 				});
 </script>

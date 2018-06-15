@@ -1,5 +1,10 @@
 'use strict';
 
+/*
+BUGS:
+move on issue, question number resets after moving on
+*/
+
 const {dialogflow} = require('actions-on-google');
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
@@ -28,11 +33,14 @@ const BEGIN_QUESTION_OTHER_INTENT = 'Begin Question - Start Other Question';
 const CHECK_ANSWER_INTENT = 'Check Student Answer';
 const CHECK_ANSWER_NEXT = 'Check Student Answer - next';
 
-const ASK_ANYTHING_INTENT = 'Ask Anything';
+const ASK_ANYTHING_INTENT = 'Ask Anything';//NIL
 
 const GET_MESSAGES = 'Get My Messages';
 const READ_MESSAGES_YES = 'Get My Messages - yes';
+const REPLY_MESSAGES = 'Get My Messages - yes - reply';//NIL
+
 const SEND_MESSAGES = 'Send Message';
+const CONFIRM_SEND = 'Send Message - yes';
 
 const {WebhookClient} = require('dialogflow-fulfillment');
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
@@ -107,6 +115,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     }
 
     function beginHomeworkSession(agent){
+        agent.clearContext('getmymessages-followup')
         var paperName = param.paperName;
         var speech = `Hang on, searching for paper ${paperName}.`;
         return getPaper(agent, paperName).
@@ -248,7 +257,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         var checkAnswerContext = agent.getContext('checkanswercontext').parameters;
         var speech;
         var change = true;
-        var questionNumber = param.questionNumber;
+        var questionNumber = param.moveTo;
         console.log('moving on: ' + questionNumber)
 
         //update previous question number
@@ -267,6 +276,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
         if(change){
             if(checkAnswerContext.questionNumber <= Object.keys(paperQuestions).length){
+                console.log('next qyestion: ' + checkAnswerContext.questionNumber)
                 return getFBQuestions(agent,checkAnswerContext.questionNumber)
                 .then(currentQuestion => {
                     return agent.add(speech + formQuestion(checkAnswerContext.questionNumber,currentQuestion));
@@ -281,33 +291,12 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     }
 
     function getMessages(agent){
-        return new Promise(resolve => {
-            console.log('function trigged 4')
-            var userID = '0001'
-            var senderName = param.senderName;
-            if(senderName !== ''){
-                console.log('sender: '+ senderName)
-            }
+        agent.clearContext('paper')
+        var userID = '0001';
+        var senderName = param.senderName;
+        console.log('senderName: ' + senderName)
 
-            var userMessageList = [];
-            messageDB.once('value', snap =>{
-                snap.forEach(message =>{
-                    message = message.val()
-                    if(message.to === userID){
-                        if(message.read === false){
-                            if(senderName !== ''){
-                                if(message.senderName.toLowerCase().includes(senderName.toLowerCase())){
-                                    userMessageList.push(message)
-                                }
-                            }else{
-                            userMessageList.push(message)
-                            }
-                        }
-                    }
-                })
-                resolve(userMessageList)
-            })
-        }).then(userMessageList => {
+        return getUserMessages(userID,senderName).then(userMessageList => {
             var speech;
             var senderName = param.senderName;
             if(userMessageList.length > 0){
@@ -316,20 +305,23 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                     speech = speech + ` from ${senderName}`
                 }
                 speech = speech + `, do you want me to read them?`
-                
-                agent.clearContext('getmymessages-followup')
-                const context = {
-                    'name': 'getmymessages-followup', 
-                    'lifespan': userMessageList.length, 
-                    'parameters': userMessageList
-                };
-                agent.setContext(context)
             }else{
                 speech = `you have no new messages`
                 if(senderName !== ''){
                     speech = speech + ` from ${senderName}`
                 }
             }
+
+            agent.clearContext('getmymessages-followup')
+            const context = {
+                'name': 'getmymessages-followup', 
+                'lifespan': userMessageList.length, 
+                'parameters': {
+                    'messagelist' : userMessageList
+                }
+            };
+            agent.setContext(context)
+
             console.log(speech)
             return agent.add(speech)
         }).catch(error=>{
@@ -339,19 +331,48 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     }
 
     function readMessages(agent){
-        var message = agent.getContext('getmymessages-followup').parameters
-        var speech;
-
+        agent.clearContext('paper')
+        var message = agent.getContext('getmymessages-followup').parameters.messagelist
+        var speech = '';
+        console.log('getMessage: ' + message[0].message.message)
         message.forEach((item,index)=> {
             console.log('message: ' + item);
-            speech = speech + 'Message ' + index + ': from:' + item.senderName + '. message:' + item.message + '. ';
+            speech = speech + 'Message ' + (index + 1) + ': ' + item.message.senderName + ' say ' + item.message.message + '. ';
+            updateMessageReadStatus(item.id);
         })
-
         agent.add(speech);
     }
 
     function sendMessage(agent){
+        agent.clearContext('paper');
+        var sendTo = param.sendTo;
+        var messageBody = param.contentBody;
+        var data = {
+            'datetime': new Date(),
+            'from': "0001",
+            'message': messageBody,
+            'read': false,
+            'recipientName': "Mr Ken",
+            'replyTo': "",
+            'senderName': "Tommy Tan",
+            'to': "T001"
+        }
+        agent.clearContext('sendmessage-followup')
+        const context = {
+            'name':'sendmessage-followup',
+            'lifespan':2,
+            'parameters': data
+        }
+        agent.setContext(context)
+        agent.add('Ok, you are sending a message to mr ken. confirm?')
+    }
 
+    function confirmSendMessage(agent){
+        agent.clearContext('paper');
+        var data = agent.getContext('sendmessage-followup')
+        //messageDB.push(data)
+        console.log(data.message)
+        agent.add('Ok, message sent?')
     }
 
     function defaultFallback(agent){
@@ -433,6 +454,47 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             datetimeCompleted: new Date()
         })
     }
+
+    //update message status
+    function updateMessageReadStatus(key){
+        console.log('update message status: ' + key)
+        messageDB.child(key).update({
+            'read': true
+        })
+    }
+
+    //fot retrieving users messages
+    const getUserMessages = (userID,senderName) => new Promise(resolve =>{
+        console.log('function trigged 5')
+            var userMessageList = [];
+            var content = {}
+            messageDB.once('value', snap =>{
+                snap.forEach(message =>{
+                    var key = message.key;
+                    message = message.val()
+                    if(message.to === userID){
+                        if(message.read === false){
+                            if(senderName !== ''){
+                                if(message.senderName.toLowerCase().includes(senderName.toLowerCase())){
+                                    content = {
+                                        'id': key,
+                                        'message':message
+                                    }
+                                    userMessageList.push(content)
+                                }
+                            }else{
+                            content = {
+                                'id': key,
+                                'message':message
+                            }
+                            userMessageList.push(content)
+                            }
+                        }
+                    }
+                })
+                resolve(userMessageList)
+            })
+    })
     
     //============================================================================================================================================
     // INTENT FUNCTION MAPPING
@@ -455,8 +517,10 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     intentMap.set(CHECK_ANSWER_NEXT, checkStudentAnswerNext);
 
     intentMap.set(GET_MESSAGES, getMessages);
-    intentMap.set(READ_MESSAGES_YES, readMessages)
+    intentMap.set(READ_MESSAGES_YES, readMessages);
+
     intentMap.set(SEND_MESSAGES, sendMessage);
+    intentMap.set(CONFIRM_SEND, confirmSendMessage);
 
     agent.handleRequest(intentMap);
 });
