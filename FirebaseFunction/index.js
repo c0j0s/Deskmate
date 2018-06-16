@@ -37,7 +37,8 @@ const ASK_ANYTHING_INTENT = 'Ask Anything';//NIL
 
 const GET_MESSAGES = 'Get My Messages';
 const READ_MESSAGES_YES = 'Get My Messages - yes';
-const REPLY_MESSAGES = 'Get My Messages - yes - reply';//NIL
+const REPLY_MESSAGES = 'Get My Messages - yes - reply';
+const CONFIRM_REPLY = 'Get My Messages - yes - reply - yes';
 
 const SEND_MESSAGES = 'Send Message';
 const CONFIRM_SEND = 'Send Message - yes';
@@ -57,16 +58,19 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     function welcomeUser(agent){
         return new Promise(resolve => {
             userDB.once('value',snapshot=>{
-                resolve(snapshot.val());
+                resolve(snapshot);
             })
         }).then(snapshot =>{
+            var id = snapshot.key
+            snapshot = snapshot.val()
+            snapshot.key = id;
+            console.log('userlogin key:' + snapshot.key)
             const context = {
                 'name': 'user', 
                 'lifespan': 30, 
                 'parameters': snapshot
             };
             agent.setContext(context)
-            console.log('login user: ' + snapshot.name)
             return agent.add(`Welcome back ${snapshot.name}. do you want to start your homework now?`)
         }).catch(error => {
             console.log(error)
@@ -294,7 +298,6 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         agent.clearContext('paper')
         var userID = '0001';
         var senderName = param.senderName;
-        console.log('senderName: ' + senderName)
 
         return getUserMessages(userID,senderName).then(userMessageList => {
             var speech;
@@ -304,7 +307,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 if(senderName !== ''){
                     speech = speech + ` from ${senderName}`
                 }
-                speech = speech + `, do you want me to read them?`
+                speech = speech + `, do you want me to read the message?`
             }else{
                 speech = `you have no new messages`
                 if(senderName !== ''){
@@ -322,40 +325,51 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             };
             agent.setContext(context)
 
-            console.log(speech)
             return agent.add(speech)
         }).catch(error=>{
             console.log(error)
-            return agent.add(error)
+            return agent.add('please try again')
         })
     }
 
     function readMessages(agent){
         agent.clearContext('paper')
+        var messageNumber = param.messageNumber
+        if(messageNumber === ''){
+            messageNumber = 1
+        }
         var message = agent.getContext('getmymessages-followup').parameters.messagelist
         var speech = '';
-        console.log('getMessage: ' + message[0].message.message)
-        message.forEach((item,index)=> {
-            console.log('message: ' + item);
-            speech = speech + 'Message ' + (index + 1) + ': ' + item.message.senderName + ' say ' + item.message.message + '. ';
-            updateMessageReadStatus(item.id);
-        })
+        speech = speech + 'Message ' + (messageNumber) + ': ' + message[messageNumber - 1].message.senderName + ' say ' + message[messageNumber - 1].message.message + '. ';
+        updateMessageReadStatus(message[messageNumber - 1].id);
+        
+        agent.clearContext('getmymessages-yes-followup')
+        const context = {
+            'name': 'getmymessages-yes-followup', 
+            'lifespan': 5, 
+            'parameters': {
+                'messageTo' : message[messageNumber - 1]
+            }
+        };
+        agent.setContext(context)
         agent.add(speech);
     }
 
-    function sendMessage(agent){
+    function replyMessage(agent){
         agent.clearContext('paper');
-        var sendTo = param.sendTo;
+        var user = agent.getContext('user').parameters;
+        var replyToMessage = agent.getContext('getmymessages-yes-followup').parameters.messageTo
+
         var messageBody = param.contentBody;
         var data = {
             'datetime': new Date(),
-            'from': "0001",
+            'from': user.key,
             'message': messageBody,
             'read': false,
-            'recipientName': "Mr Ken",
-            'replyTo': "",
-            'senderName': "Tommy Tan",
-            'to': "T001"
+            'recipientName': replyToMessage.message.senderName,
+            'replyTo': replyToMessage.id,
+            'senderName': user.name,
+            'to': replyToMessage.message.from
         }
         agent.clearContext('sendmessage-followup')
         const context = {
@@ -364,15 +378,59 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             'parameters': data
         }
         agent.setContext(context)
-        agent.add('Ok, you are sending a message to mr ken. confirm?')
+        return agent.add('Ok, you are replying to ' + replyToMessage.message.senderName + '. confirm?')
+    }
+
+    function sendMessage(agent){
+        agent.clearContext('paper');
+        var user = agent.getContext('user').parameters;
+        var sendTo = param.sendTo;
+        var recipient = {};
+
+        recipient.tId = '';
+
+        for(var teacher in user.teacherList){
+            if (user.teacherList.hasOwnProperty(teacher)) {
+                if(user.teacherList[teacher].name.toLowerCase() === sendTo.toLowerCase()){
+                    recipient = user.teacherList[teacher]
+                }
+            }
+        }
+        if(recipient.tId === ''){
+            return agent.add('Sorry i cant find ' + param.sendTo + ' in your contact list, please try again' )
+        }
+
+        var messageBody = param.contentBody;
+        var data = {
+            'datetime': new Date(),
+            'from': user.key,
+            'message': messageBody,
+            'read': false,
+            'recipientName': recipient.name,
+            'replyTo': "",
+            'senderName': user.name,
+            'to': recipient.tId
+        }
+        agent.clearContext('sendmessage-followup')
+        const context = {
+            'name':'sendmessage-followup',
+            'lifespan':2,
+            'parameters': data
+        }
+        agent.setContext(context)
+        return agent.add('Ok, you are sending a message to your '+ recipient.subject +' teacher '+ recipient.sal + ' ' + recipient.name + '. confirm?')
     }
 
     function confirmSendMessage(agent){
         agent.clearContext('paper');
-        var data = agent.getContext('sendmessage-followup')
-        //messageDB.push(data)
-        console.log(data.message)
-        agent.add('Ok, message sent?')
+        var data = agent.getContext('sendmessage-followup').parameters;
+        delete data['contentBody.original']
+        delete data['sendTo.original']
+        delete data['contentBody']
+        delete data['sendTo']
+        console.log(data)
+        messageDB.push(data)
+        return agent.add('Ok, message sent.')
     }
 
     function defaultFallback(agent){
@@ -495,6 +553,22 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 resolve(userMessageList)
             })
     })
+
+    //[DEPRECIATED] for clearing the salutation in sendors name
+    function clearSal(rawText){
+        var sals = ['mr', 'ms', 'mrs', 'mdm', 'dr'];
+        var result = {};
+
+        sals.forEach((item,index) => {
+            if (new RegExp("\\b"+item+"\\b").test(rawText)) {
+                console.log(item + ' ' + rawText)
+                result.sal = item
+                result.name = rawText.replace(item, '')
+            } 
+        })
+        console.log(result)
+        return result
+    }
     
     //============================================================================================================================================
     // INTENT FUNCTION MAPPING
@@ -518,6 +592,8 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
     intentMap.set(GET_MESSAGES, getMessages);
     intentMap.set(READ_MESSAGES_YES, readMessages);
+    intentMap.set(REPLY_MESSAGES, replyMessage)
+    intentMap.set(CONFIRM_REPLY,confirmSendMessage)
 
     intentMap.set(SEND_MESSAGES, sendMessage);
     intentMap.set(CONFIRM_SEND, confirmSendMessage);

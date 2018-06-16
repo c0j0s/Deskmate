@@ -36,107 +36,57 @@ var paperid;
 
 var userDB = firebase.database().ref('/profile/0001')    
 const messageDB = firebase.database().ref('/messages');
-getMessages()
-function getMessages(){
-        var userID = '0001'
-        var senderName = 'ken';
-        if(senderName !== ''){
-            console.log('sender: '+ senderName)
+
+var sals = ['mr', 'ms', 'mrs', 'mdm', 'dr'];
+
+sals.forEach((item,index) => {
+    if (new RegExp("\\b" +item +"\\b").test('mrr mr mrken')) {
+        console.log( 'mrr mr mrken'.replace(item, ''))
+    } 
+})
+var user = {};
+user.teacherList = { '000000000': 
+   { class: '3A',
+     name: 'ken',
+     sal: 'mr',
+     stage: 3,
+     subject: 'science',
+     tId: 'T001' } }
+     for(var teacher in user.teacherList){
+            if (user.teacherList.hasOwnProperty(teacher)) {
+                console.log(teacher)
+                if(user.teacherList[teacher].name.toLowerCase() === 'ken'){
+                    recipient = user.teacherList[teacher]
+                    console.log(recipient)
+                }
+            }
         }
 
-        return new Promise(resolve => {
-            var userMessageList = [];
-            messageDB.once('value', snap =>{
-                snap.forEach(message =>{
-					message = message.val()
-                    if(message.to === userID){
-                        if(message.read === false){
-                            if(senderName !== ''){
-                                if(message.senderName.toLowerCase().includes(senderName.toLowerCase())){
-									userMessageList.push(message)
-                                }
-                            }else{
-							console.log(message)
-                            userMessageList.push(message)
-                            }
-                        }
-					}
-			console.log(userMessageList)
-					
-            resolve(userMessageList)
-                })
-			})
-        }).then(userMessageList => {
-			var speech;
-			console.log(userMessageList)
-			console.log(userMessageList.length)
-            if(userMessageList.length !== 0){
-                speech = `You have ${userMessageList.length} new messages`
-                if(senderName !== ''){
-                    speech = speech + `from ${senderName}`
-                }
-                speech = speech + `, do you want me to read them?`
-				console.log(speech)
-				return speech
-            }else{
-                speech = `you have no new messages`
-                if(senderName !== ''){
-                    speech = speech + `from ${senderName}`
-				}
-				console.log(speech)
-                return speech
-            }
-        }).catch(error => {
-            console.log(error)
-        });
-    }
+// for (var p in user.teacherList) {
+//     if( user.teacherList.hasOwnProperty(p) ) {
+//        result += p + " , " + user.teacherList[p] + "\n";
+//     } 
+//   }   
 
-getUserHomeworks()
-   function getUserHomeworks(){
-        return new Promise(resolve => {
-            var listOfPaper = {
-                completed: [],
-                notCompleted: []
-            }
-            homeworkDB.once('value',snapshot=>{
-                snapshot.forEach(paper =>{
-                    paper = paper.val();
-                    if(paper.attempts === 0){
-                        listOfPaper.notCompleted.push(paper.name)
-                    }else{
-                        listOfPaper.completed.push(paper.name)
-                    }
-                })
-                resolve(listOfPaper)
-            })
-        }).then(listOfPaper =>{
-			var speech;
-			console.log(listOfPaper.notCompleted.length)
-            if(listOfPaper.notCompleted.length !== 0){
-                speech = `Currently you have ${listOfPaper.notCompleted.length} not completed homework, they are `
-                listOfPaper.notCompleted.forEach((item,index) => {
-                    if((listOfPaper.notCompleted.length - 1) === index){
-                        speech = speech.slice(0, -2);
-                        speech = speech + ' and ' + item + '.'
-                    }else{
-                        speech = speech + item + ', '
-                    }
-                })
-            }else{
-                speech = `Currently you have no new homework.`
-            }
-            console.log(speech)
-            return 
-        }).catch(error => {
-            console.log(error)
-            return 
-        });
-    }
-    firebase.database().ref('/messages').child('0000000001').update({
-            'read': true
-        })
+var data = { senderName: 'Tommy Tan',
+  datetime: '2018-06-16T07:01:53.524Z',
+  read: false,
+  sendTo: 'Ken',
+  replyTo: '',
+  recipientName: 'ken',
+  to: 'T001',
+  message: 'hello nice to meet you',
+  contentBody: 'hello nice to meet you',
+  'contentBody.original': 'hello nice to meet you',
+  'sendTo.original': 'ken' }
+  delete data['contentBody.original']
+delete data['sendTo.original']
+console.log(data)
+  //messageDB.push(data)
 
-				});
+
+});
+           
 </script>
 </body>
 </html>
