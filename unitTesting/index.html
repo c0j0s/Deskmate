@@ -28,159 +28,113 @@ messagingSenderId: "876434687063"
 };
 firebase.initializeApp(config);
 
-var homework = firebase.database().ref('/profile/0001/homework');
+var homeworkDB = firebase.database().ref('/profile/0001/homework');
 var questionDB = firebase.database().ref('/question');
 var paperName = "1";
 var questionNumber = 2;
 var paperid;
 
-homework.once('value',snapshot=>{
-	snapshot.forEach(snap => {
-				if(snap.val().name.includes(paperName)){
-						var paperQuestions = snap.val().questions;
-						//conv.data.paperQuestions = paperQuestions;
-						console.log(paperQuestions);
+var userDB = firebase.database().ref('/profile/0001')    
+const messageDB = firebase.database().ref('/messages');
+getMessages()
+function getMessages(){
+        var userID = '0001'
+        var senderName = 'ken';
+        if(senderName !== ''){
+            console.log('sender: '+ senderName)
+        }
 
-						var contexts = [
-			{
-				"name": "doingquestion",
-				"parameters": {
-					"paperName.original": "",
-					"paperName": "1",
-					"questionNumber.original": "",
-					"questionNumber": ""
-				},
-				"lifespan": 5
-			},
-			{
-				"name": "paper",
-				"parameters": {
-					"paperName.original": "",
-					"paperName": "1",
-					"questions": {
-						"0": "0001",
-						"1": "0002",
-						"2": "0003",
-						"3": "0004"
-					},
-					"name": "paper1",
-					"questionNumber.original": "",
-					"questionNumber": "",
-					"attempts": 2
-				},
-				"lifespan": 4
-			},
-			{
-				"name": "actions_capability_screen_output",
-				"parameters": {
-					"paperName.original": "",
-					"paperName": "1",
-					"questionNumber.original": "",
-					"questionNumber": ""
-				},
-				"lifespan": 0
-			},
-			{
-				"name": "doinghomework",
-				"parameters": {
-					"paperName.original": "",
-					"paperName": "1",
-					"questionNumber.original": "",
-					"questionNumber": ""
-				},
-				"lifespan": 4
-			}
-									]
+        return new Promise(resolve => {
+            var userMessageList = [];
+            messageDB.once('value', snap =>{
+                snap.forEach(message =>{
+					message = message.val()
+                    if(message.to === userID){
+                        if(message.read === false){
+                            if(senderName !== ''){
+                                if(message.senderName.toLowerCase().includes(senderName.toLowerCase())){
+									userMessageList.push(message)
+                                }
+                            }else{
+							console.log(message)
+                            userMessageList.push(message)
+                            }
+                        }
+					}
+			console.log(userMessageList)
 					
-								var paper;
-								contexts.filter(con =>{
-									if(con.name === 'paper'){
-										paper = con.parameters;
-									}
-								});
-								console.log("2: " + paper.paperName);
-								var paperQuestions = paper.questions;
-								console.log("3: " + paperQuestions[0].id);
-							
-								
-								console.log(Object.keys(paperQuestions).length);
-
-						// questionDB.once('value', snap => {
-						// 	var currentQuestion = snap.child(paperQuestions[3-1].id).val();
-						// 	var answer = snap.child("0001").answer;
-						// 		//resolve(currentQuestion);
-						// 	console.log(snap.child("0003").val().answer);
-						// });
+            resolve(userMessageList)
+                })
+			})
+        }).then(userMessageList => {
+			var speech;
+			console.log(userMessageList)
+			console.log(userMessageList.length)
+            if(userMessageList.length !== 0){
+                speech = `You have ${userMessageList.length} new messages`
+                if(senderName !== ''){
+                    speech = speech + `from ${senderName}`
+                }
+                speech = speech + `, do you want me to read them?`
+				console.log(speech)
+				return speech
+            }else{
+                speech = `you have no new messages`
+                if(senderName !== ''){
+                    speech = speech + `from ${senderName}`
 				}
-		});
-})
-var agent;
-
-function checkStudentAnswer(agent){
-        var paper = agent.getContext('paper').parameters;
-        var paperQuestions = paper.questions;
-        var answer = param.answer;
-        var currentQuestion = agent.getContext('currentQuestion').parameters;
-        var checkAnswerContext = agent.getContext('checkAnswerContext').parameters;
-
-        console.log(currentQuestion.answer)
-        var speech, postData;
-
-        if(answer === currentQuestion.answer.toUpperCase()){
-            speech = `Answer correct! <break time="1s"/> Moving on to the next question.`;
-            checkAnswerContext.questionAnswerStatus = "correct";
-            
-            if(checkAnswerContext.questionTryCount === 0){
-                checkAnswerContext.score = checkAnswerContext.score + currentQuestion.marks;
+				console.log(speech)
+                return speech
             }
-            
-            checkAnswerContext.questionNumber++;
-        }else{
-            speech = `Answer incorrect! <break time="1s"/> try again?`;
-            checkAnswerContext.questionAnswerStatus  = "wrong";
-        }
-        
-        if(checkAnswerContext.questionNumber === checkAnswerContext.preQuestionNumber){
-            checkAnswerContext.questionTryCount++;
-        }
-        
-        postData = {
-            status: checkAnswerContext.questionAnswerStatus,
-            stuAns: answer,
-            tryCount: checkAnswerContext.questionTryCount
-        }
-        updateQuestionScore(postData,paper.name, checkAnswerContext.preQuestionNumber);
-        
-        if(checkAnswerContext.questionNumber <= Object.keys(paperQuestions).length){
-            if(checkAnswerContext.questionAnswerStatus === "correct"){
-                checkAnswerContext.questionTryCount = 0;
-            }
-            agent.clearContext('checkAnswerContext')
-            agent.setContext('checkAnswerContext', 5, checkAnswerContext)
-            return getFBQuestions(agent,checkAnswerContext.questionNumber)
-            .then(currentQuestion => {
-                return agent.add(speech + formQuestion(checkAnswerContext.questionNumber,currentQuestion));
-            });
-        }else{
-            updatePaperProperties(paper.name,checkAnswerContext.score);
-            return agent.add("Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore);
-        }
-    }
-    
-    function updateQuestionScore(postData, paperName, questionNumber){
-        var hwref = homework.child(paperName + "/questions/" + (questionNumber - 1));
-        hwref.update(postData);
+        }).catch(error => {
+            console.log(error)
+        });
     }
 
-    function updatePaperProperties(paperName,score){
-        homework.child(paperName).update({
-            score: score,
-            attempts: paperAttempts + 1,
-            status: "completed"
+getUserHomeworks()
+   function getUserHomeworks(){
+        return new Promise(resolve => {
+            var listOfPaper = {
+                completed: [],
+                notCompleted: []
+            }
+            homeworkDB.once('value',snapshot=>{
+                snapshot.forEach(paper =>{
+                    paper = paper.val();
+                    if(paper.attempts === 0){
+                        listOfPaper.notCompleted.push(paper.name)
+                    }else{
+                        listOfPaper.completed.push(paper.name)
+                    }
+                })
+                resolve(listOfPaper)
+            })
+        }).then(listOfPaper =>{
+			var speech;
+			console.log(listOfPaper.notCompleted.length)
+            if(listOfPaper.notCompleted.length !== 0){
+                speech = `Currently you have ${listOfPaper.notCompleted.length} not completed homework, they are `
+                listOfPaper.notCompleted.forEach((item,index) => {
+                    if((listOfPaper.notCompleted.length - 1) === index){
+                        speech = speech.slice(0, -2);
+                        speech = speech + ' and ' + item + '.'
+                    }else{
+                        speech = speech + item + ', '
+                    }
+                })
+            }else{
+                speech = `Currently you have no new homework.`
+            }
+            console.log(speech)
+            return 
+        }).catch(error => {
+            console.log(error)
+            return 
+        });
+    }
+    firebase.database().ref('/messages').child('0000000001').update({
+            'read': true
         })
-    }
-
-
 
 				});
 </script>
