@@ -68,8 +68,7 @@ FirebaseFunction\node_modules
 .eslintrc.json
 packageold.json
 indexold.js
-unitTesting
-functionsBoiler
-Deskmate unitTesting
-Deskmate functionsBoiler
 Deskmate AndroidApp/.idea/workspace.xml
+garbage/
+FirebaseFunction/node_modules/
+FirebaseFunction/node_modules/accepts/package.json

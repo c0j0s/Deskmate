@@ -1,0 +1,406 @@
+{
+  "messages" : {
+    "0000000000" : {
+      "datetime" : "31/12/2018",
+      "from" : "0001",
+      "message" : "hi",
+      "read" : false,
+      "recipientName" : "Mr Ken",
+      "replyTo" : "",
+      "senderName" : "Tommy Tan",
+      "to" : "T001"
+    },
+    "0000000001" : {
+      "datetime" : "31/12/2018",
+      "from" : "T001",
+      "message" : "hi to you too",
+      "read" : true,
+      "recipientName" : "Tommy Tan",
+      "replyTo" : "0000000000",
+      "senderName" : "Mr Ken",
+      "to" : "0001"
+    },
+    "-LF6c3q6L8AUuRZXK8VM" : {
+      "datetime" : "2018-06-16T08:04:57.850Z",
+      "from" : "0001",
+      "message" : "hello",
+      "read" : false,
+      "recipientName" : "ken",
+      "replyTo" : "",
+      "senderName" : "Tommy Tan",
+      "to" : "T001"
+    },
+    "-LF6cFaLSwQM0E2cI3JK" : {
+      "datetime" : "2018-06-16T08:05:44.997Z",
+      "from" : "0001",
+      "message" : "good day",
+      "read" : false,
+      "recipientName" : "Mr Ken",
+      "replyTo" : "0000000001",
+      "senderName" : "Tommy Tan",
+      "to" : "T001"
+    }
+  },
+  "profile" : {
+    "0001" : {
+      "age" : 8,
+      "avgHwDiff" : 5,
+      "competency" : 0.1,
+      "homework" : {
+        "1" : {
+          "attempts" : 8,
+          "avgDiff" : 5,
+          "datetimeCompleted" : "12/31/2018",
+          "name" : "paper1",
+          "questions" : [ {
+            "id" : "0001",
+            "status" : "wrong",
+            "stuAns" : "A",
+            "tryCount" : 1
+          }, {
+            "id" : "0002",
+            "status" : "correct",
+            "stuAns" : "C",
+            "tryCount" : 0
+          }, {
+            "id" : "0003",
+            "status" : "correct",
+            "stuAns" : "B",
+            "tryCount" : 2
+          }, {
+            "id" : "0004",
+            "status" : "correct",
+            "stuAns" : "D",
+            "tryCount" : 0
+          } ],
+          "score" : 25,
+          "status" : "completed",
+          "totalScore" : 100
+        },
+        "-LEs0DphMYBhGOzVWJX0" : {
+          "attempts" : 1,
+          "name" : "paper2",
+          "questions" : [ {
+            "id" : "0001",
+            "status" : "wrong",
+            "stuAns" : "B",
+            "tryCount" : 2
+          }, {
+            "id" : "0002",
+            "status" : "correct",
+            "stuAns" : "C",
+            "tryCount" : 0
+          }, {
+            "id" : "0003",
+            "status" : "correct",
+            "stuAns" : "B",
+            "tryCount" : 0
+          }, {
+            "id" : "0004",
+            "status" : "correct",
+            "stuAns" : "D",
+            "tryCount" : 1
+          } ],
+          "score" : 60,
+          "status" : "completed",
+          "totalScore" : 100
+        },
+        "-LEwlJvv2XjzjbXvpDfY" : {
+          "attempts" : 0,
+          "name" : "paper 4",
+          "questions" : [ {
+            "id" : "0007",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0011",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0008",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0010",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          } ],
+          "score" : 0,
+          "status" : "not completed",
+          "totalScore" : 100
+        },
+        "-LF1v_iskKXZJczZqPBX" : {
+          "attempts" : 0,
+          "name" : "paper 5",
+          "questions" : [ {
+            "id" : "0009",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0006",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0005",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0012",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          } ],
+          "score" : 0,
+          "status" : "not completed",
+          "totalScore" : 100
+        }
+      },
+      "name" : "Tommy Tan",
+      "point" : 0,
+      "stage" : 3,
+      "studentAbility" : {
+        "handTouch" : true,
+        "hearing" : true,
+        "selfMove" : true,
+        "sight" : true,
+        "speak" : true
+      },
+      "studyArea" : {
+        "home" : true,
+        "school" : true
+      },
+      "teacherList" : {
+        "000000000" : {
+          "class" : "3A",
+          "name" : "ken",
+          "sal" : "mr",
+          "stage" : 3,
+          "subject" : "science",
+          "tId" : "T001"
+        }
+      }
+    },
+    "0002" : {
+      "homework" : {
+        "-LEs4-rRWUmj3RZio2Pe" : {
+          "name" : "paper2",
+          "questions" : [ {
+            "id" : "0001",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0002",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0003",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0004",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          } ],
+          "score" : 0,
+          "totalScore" : 100
+        },
+        "-LF1wQO2LgVrKfMdso7x" : {
+          "attempts" : 0,
+          "name" : "paper3",
+          "questions" : [ {
+            "id" : "0007",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0008",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0006",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0005",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          } ],
+          "score" : 0,
+          "status" : "not completed",
+          "totalScore" : 100
+        }
+      },
+      "name" : "test",
+      "point" : 10000
+    }
+  },
+  "question" : {
+    "0001" : {
+      "a" : "Both reproduces by spores",
+      "answer" : "b",
+      "b" : "Both make their own food",
+      "c" : "Both can be useful or harmful to us",
+      "d" : "Both cannot be seen under microscope",
+      "difficulty" : 5,
+      "marks" : 25,
+      "question" : "Which of the following is true about both fungi and bacteria?",
+      "theme" : "diversity",
+      "topic" : "living things"
+    },
+    "0002" : {
+      "a" : "Fungi an reproduce",
+      "answer" : "c",
+      "b" : "Not all fungi can be seen without microscopes",
+      "c" : "Fungi can move from place to place on its own",
+      "d" : "Fungi feeds on other living things, which may be dead or alive",
+      "marks" : 25,
+      "question" : "Which of the following is false about fungi?"
+    },
+    "0003" : {
+      "a" : "Which of  is false about fungi?",
+      "answer" : "b",
+      "b" : "\"Which of the following is false ",
+      "c" : " following is false about fungi?\"",
+      "d" : "Which of the following is false about fungi?",
+      "marks" : 25,
+      "question" : "Which of the following is false about fungi?"
+    },
+    "0004" : {
+      "a" : " the following is false about fungi?\"",
+      "answer" : "d",
+      "b" : " false about fungi?\"",
+      "c" : "Which offollowing is false about fungi?",
+      "d" : "Which of ",
+      "marks" : 25,
+      "question" : "Which of the following  fungi?"
+    },
+    "0005" : {
+      "a" : "a bird lays eggs in a nest",
+      "answer" : "c",
+      "b" : "a snail hides itself in the shell when touch",
+      "c" : "a dog barks when a stranger approaches it",
+      "d" : "a plant grows toward the direction of the sunlight",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "which of the following is not an example of a living thing responding to changes around them?",
+      "theme" : "diversity"
+    },
+    "0006" : {
+      "a" : "a",
+      "answer" : "b",
+      "b" : "b",
+      "c" : "c",
+      "d" : "d",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Which part of the plant tells you it is a flowering plant?",
+      "theme" : "diversity"
+    },
+    "0007" : {
+      "a" : "P, Q and R only",
+      "answer" : "c",
+      "b" : "P, R and U only",
+      "c" : "Q, R and S only",
+      "d" : "Q, S and U only",
+      "difficulty" : 4,
+      "marks" : 20,
+      "question" : "in which of the following parts of the digestive system are digestive juices produced?",
+      "theme" : "systems"
+    },
+    "0008" : {
+      "a" : "P, Q, R, S",
+      "answer" : "c",
+      "b" : "P, Q, R, U",
+      "c" : "P, Q, R, S, U, T",
+      "d" : "P, Q, R, U, S, T",
+      "difficulty" : 2,
+      "marks" : 20,
+      "question" : "which of the following shows the correct sequence until digestion of food is completed?",
+      "theme" : "systems"
+    },
+    "0009" : {
+      "a" : 1,
+      "answer" : 2,
+      "b" : 2,
+      "c" : 3,
+      "d" : 4,
+      "difficulty" : 1,
+      "marks" : 20,
+      "question" : "which of the following does not make use of magnet work",
+      "theme" : "magnet"
+    },
+    "0010" : {
+      "a" : "B,A,D,C",
+      "answer" : "a",
+      "b" : "C,B,D,A",
+      "c" : "C,D,A,B",
+      "d" : "D,C,A,B",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "based on the above results, arrange the magnets according to their magnetic strength, starting with the weakest magnet",
+      "theme" : "magnet"
+    },
+    "0011" : {
+      "a" : "S",
+      "answer" : "c",
+      "b" : "T",
+      "c" : "U",
+      "d" : "V",
+      "difficulty" : 2,
+      "marks" : 20,
+      "question" : "which plant part represents the roots",
+      "theme" : "diversity"
+    },
+    "0012" : {
+      "a" : "A",
+      "answer" : "c",
+      "b" : "B",
+      "c" : "C",
+      "d" : "D",
+      "difficulty" : 1,
+      "marks" : 20,
+      "question" : "based on the chart above, which of the following correctly represents living thing P?",
+      "theme" : "diversity"
+    }
+  },
+  "teacher" : {
+    "T001" : {
+      "name" : "Ken",
+      "sal" : "Mr",
+      "sir" : "Liu"
+    }
+  },
+  "time" : {
+    "user" : {
+      "0001" : {
+        "paper1" : {
+          "1" : 2,
+          "2" : 3,
+          "3" : 10,
+          "4" : 5,
+          "5" : 7,
+          "6" : 1,
+          "7" : 2,
+          "8" : 2,
+          "9" : 5,
+          "10" : 1,
+          "total" : 60
+        }
+      }
+    }
+  }
+}
