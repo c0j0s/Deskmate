@@ -12,12 +12,33 @@
 	<script src="js/bootstrap.js"></script>
 	
 
-	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script
+	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
 
 
   </head>
   <body>
-	<div class="container">
+	<nav>
+		<div class="container" id="nav-content">
+			<div id="nav-pic">
+				<a href="index.html">
+					<img src="..\Deskmate AndroidApp\app\src\main\res\mipmap-mdpi\ic_launcher.png"/>
+				</a>
+			</div>
+			<ul class="nav nav-pills">
+				<li class="nav-item">
+					<a class="nav-link active" href="index.html">
+						Home
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="message.html">
+						Messages
+					</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+	<div class="container content">
 		<h2 id="heading1">
 			Welcome, Teachers
 		</h2>
@@ -150,7 +171,7 @@
 					$('<div class= "card bg-light mb-3"><div id="heading2" class="card-header"><b>Name: '+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button></div><div class="card-body scrollmenu"><div class="card-deck child inline" id="details'+userkey+'"></div></div></div><p></p>').appendTo("#data");
 						childSnapshot.child("homework").forEach(function(hwsnapshot){
 						//console.log(childSnapshot.val());
-								$('<div class="card text-white bg-secondary mb-3 one"><div class="heading4 card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/100</b></div></div><div id="'+hwsnapshot.key+'" class="card-body"></div></div></div>').appendTo('#details'+userkey);
+								$('<div class="card text-white bg-secondary mb-3 one"><div class="heading4 card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/100</b></div></div><div id="'+hwsnapshot.key+'" class="card-body"></div></div></div>').prependTo('#details'+userkey);
 								hwsnapshot.child("questions").forEach(function(qnssnapshot){
 									$('<div id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="container-fluid heading3 card-text">No of Tries: '+qnssnapshot.val().tryCount+'</p><p class="container-fluid heading3 card-text" >Student Answer: '+qnssnapshot.val().stuAns+'</p></div>').appendTo('#'+hwsnapshot.key);
 									questionDb = firebase.database().ref('question');
