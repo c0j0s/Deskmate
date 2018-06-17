@@ -17,26 +17,27 @@
 
   </head>
   <body>
-	<nav>
-		<div class="container" id="nav-content">
-			<div id="nav-pic">
-				<a href="index.html">
-					<img src="..\Deskmate AndroidApp\app\src\main\res\mipmap-mdpi\ic_launcher.png"/>
-				</a>
-			</div>
-			<ul class="nav nav-pills">
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<div class="container">
+		<a class="navbar-brand" href="https://deskmate2018.firebaseapp.com/">
+				<img src="https://firebasestorage.googleapis.com/v0/b/deskmate2018.appspot.com/o/ic_launcher.png?alt=media&token=fa090ccd-e14e-4099-b3b7-cf874a035ad6"/>
+			Deskmate
+		</a>
+		<div class="" id="navbarNav collapse navbar-collapse">
+		<ul class="navbar-nav mr-auto">
 				<li class="nav-item">
-					<a class="nav-link active" href="index.html">
-						Home
-					</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="message.html">
-						Messages
-					</a>
-				</li>
-			</ul>
+						<a class="nav-link active" href="index.html">
+							Home
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="message.html">
+							Messages
+						</a>
+					</li>
+		</ul>
 		</div>
+</div>
 	</nav>
 	<div class="container content">
 		<h2 id="heading1">
@@ -102,9 +103,6 @@
 			function getQues(question){
 				question.forEach(function(quesSnapshot){
 					var qesid = quesSnapshot.key;
-					<!-- console.log(qesid); -->
-					<!-- console.log(i); -->
-					<!-- console.log(qesid == i); -->
 						if (qesid == i){
 							if(a.length < qnsid.length){
 								if(qnsid.indexOf(qesid) === -1){
@@ -171,18 +169,19 @@
 					$('<div class= "card bg-light mb-3"><div id="heading2" class="card-header"><b>Name: '+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button></div><div class="card-body scrollmenu"><div class="card-deck child inline" id="details'+userkey+'"></div></div></div><p></p>').appendTo("#data");
 						childSnapshot.child("homework").forEach(function(hwsnapshot){
 						//console.log(childSnapshot.val());
-								$('<div class="card text-white bg-secondary mb-3 one"><div class="heading4 card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/100</b></div></div><div id="'+hwsnapshot.key+'" class="card-body"></div></div></div>').prependTo('#details'+userkey);
+								var qindex = 4;
+								$('<div class="card mb-3 one"><div class="heading4 bg-secondary text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/100</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div></div></div>').prependTo('#details'+userkey);
 								hwsnapshot.child("questions").forEach(function(qnssnapshot){
-									$('<div id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="container-fluid heading3 card-text">No of Tries: '+qnssnapshot.val().tryCount+'</p><p class="container-fluid heading3 card-text" >Student Answer: '+qnssnapshot.val().stuAns+'</p></div>').appendTo('#'+hwsnapshot.key);
+									$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="float-left p-2 heading3 card-text">Attempted tries: <span class="badge badge-info badge-pill">'+qnssnapshot.val().tryCount+'</span></p><span class="badge mt-2 badge-success  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></div>').appendTo('#'+hwsnapshot.key);
 									questionDb = firebase.database().ref('question');
 									questionDb.once('value', getQues)
 									function getQues(question){
 									//console.log(question);
-									
+										
 										question.forEach(function(quesSnapshot){
 											var qesid = quesSnapshot.key;
 												if( qesid === qnssnapshot.val().id){
-													$('<p class="heading3 card-text"><b>'+quesSnapshot.val().question+'</b></p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
+													$('<p class="heading3 card-text"><b>'+ (qindex) + ") " + quesSnapshot.val().question+'</b></p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
 													$("#"+userkey).on('click',function() {
 														if(curruser == $(this).data("user")){
 															qnsid.push(qesid);
@@ -196,7 +195,7 @@
 															console.log(qnsid);
 														}
 													})
-													
+													qindex--;
 												}
 										})
 										
