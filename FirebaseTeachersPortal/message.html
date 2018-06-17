@@ -44,6 +44,30 @@
 			
 		</div>
 	</div>
+	<div class="container">
+
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+		  <h4 class="modal-title">Modal Header</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+		  Message:<textarea class="form-control input-sm" name="Msg" id = "msg"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" onclick="writetoDB()">Submit</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+</div>
     <script>
         
         //The Firebase SDK is initialized and available here!
@@ -58,36 +82,52 @@
 		firebase.initializeApp(config);
 		var messageDb = firebase.database().ref('messages');
 		messageDb.once('value', getmessage)
-		var studentnameDb;
 		var value;
+		var Nid;
+		var Sname;
+		var Rname;
+		var Msg;
+		var tid;
+		var sid;
 		function getmessage(message){
 			message.forEach(function(msgsnapshot){
 			value = msgsnapshot.val().replyTo;
 				console.log(value);
 				if(value === "" || value === undefined){
-					$('<div class="card bg-light mb-3"><div class="card-header">Name: '+msgsnapshot.val().senderName+'</div><div class="card-body" data-msg="s'+msgsnapshot.key+'" id="s'+msgsnapshot.key+'"><div id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'</p></div><hr></div></div></div>').prependTo('#content');
-				}else if(value != "" && value == $(this).data("msg")){
-					$('<div id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'</p></div><hr></div>').prependTo('#s'+value);
+					$('<div class="card bg-light mb-3"><div class="card-header">Name: '+msgsnapshot.val().senderName+'</div><div class="card-body" data-msg="'+msgsnapshot.key+'" id="s'+msgsnapshot.key+'"><div id="'+msgsnapshot.key+'"><div class="card-text" data-indvmsg="'+msgsnapshot.key+'"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'<button class="btn" data-indvmsg="'+msgsnapshot.key+'" data-to="'+msgsnapshot.val().to+'" data-from="'+msgsnapshot.val().from+'" data-sname="'+msgsnapshot.val().senderName+'" data-rname="'+msgsnapshot.val().recipientName+'" id="'+msgsnapshot.key+'" data-toggle="modal" data-target="#myModal" onclick="reply(this)">reply</button></p><br></div><hr></div></div></div>').prependTo('#content');
+				}else if(value != "" && msgsnapshot.val().from.includes("T")){
+				//console.log($( this ).data( "msg" ));
+					$('<div data-indvmsg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'</p></div><hr></div>').prependTo('#s'+value);
 				}
 				else{
-				$('<div id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'</p></div><hr></div>').prependTo('#'+value)
+				$('<div data-indvmsg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'<button class="btn" data-indvmsg="'+msgsnapshot.key+'" data-to="'+msgsnapshot.val().to+'" data-from="'+msgsnapshot.val().from+'" data-sname="'+msgsnapshot.val().senderName+'" data-rname="'+msgsnapshot.val().recipientName+'" id="'+msgsnapshot.key+'" data-toggle="modal" data-target="#myModal" onclick="reply(this)">reply</button></p><br></div><hr></div>').prependTo('#'+value)
 				}
 			})
 		}
+		function reply(id){
+			Nid = $(id).data("indvmsg");
+			Sname = $(id).data("sname");
+			Rname = $(id).data("rname");
+			tids = $(id).data("to");
+			sids = $(id).data("from");
+		}
+
+		function writetoDB(){
+		Msg = document.getElementById('msg').value;
+		var date = 	new Date().toISOString();
+		console.log(date);
+		firebase.database().ref('messages/').push({
+			datetime: date,
+			from: tids,
+			message: Msg,
+			read: false,
+			recipientName: Rname,
+			replyTo: Nid,
+			senderName: Sname,
+			to: sids,
+		})
+		}
 		
-		<!-- function writetoDB(){ -->
-		<!-- papername = document.getElementById('pName').value; -->
-			<!-- firebase.database().ref('messages/').push({ -->
-				<!-- datetime:, -->
-				<!-- from:, -->
-				<!-- message:, -->
-				<!-- read: false, -->
-				<!-- recipientName:, -->
-				<!-- replyTo:, -->
-				<!-- senderName:, -->
-				<!-- to:, -->
-			<!-- }) -->
-			<!-- } -->
     </script>
   </body>
 </html>
