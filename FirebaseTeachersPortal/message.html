@@ -92,14 +92,14 @@
 		function getmessage(message){
 			message.forEach(function(msgsnapshot){
 			value = msgsnapshot.val().replyTo;
-				console.log(value);
+				//console.log(value);
 				if(value === "" || value === undefined){
-					$('<div class="card bg-light mb-3"><div class="card-header">Name: '+msgsnapshot.val().senderName+'</div><div class="card-body" data-msg="'+msgsnapshot.key+'" id="s'+msgsnapshot.key+'"><div id="'+msgsnapshot.key+'"><div class="card-text" data-indvmsg="'+msgsnapshot.key+'"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'<button class="btn" data-indvmsg="'+msgsnapshot.key+'" data-to="'+msgsnapshot.val().to+'" data-from="'+msgsnapshot.val().from+'" data-sname="'+msgsnapshot.val().senderName+'" data-rname="'+msgsnapshot.val().recipientName+'" id="'+msgsnapshot.key+'" data-toggle="modal" data-target="#myModal" onclick="reply(this)">reply</button></p><br></div><hr></div></div></div>').prependTo('#content');
+					$('<div class="card bg-light mb-3"><div class="card-header">Name: '+msgsnapshot.val().senderName+'</div><div class="card-body" data-msg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div id="'+msgsnapshot.key+'"><div class="card-text" data-indvmsg="'+msgsnapshot.key+'"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'<button class="btn" data-indvmsg="'+msgsnapshot.key+'" data-to="'+msgsnapshot.val().to+'" data-from="'+msgsnapshot.val().from+'" data-sname="'+msgsnapshot.val().senderName+'" data-rname="'+msgsnapshot.val().recipientName+'" id="'+msgsnapshot.key+'" data-toggle="modal" data-target="#myModal" onclick="reply(this)">reply</button></p><br></div><hr></div></div></div>').prependTo('#content');
 				}else if(value != "" && msgsnapshot.val().from.includes("T")){
-				//console.log($( this ).data( "msg" ));
-					$('<div data-indvmsg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'</p></div><hr></div>').prependTo('#s'+value);
+					$('<div data-indvmsg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'</p></div><hr></div>').prependTo('#'+value);
 				}
 				else{
+				console.log(value);
 				$('<div data-indvmsg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+msgsnapshot.val().datetime+'<button class="btn" data-indvmsg="'+msgsnapshot.key+'" data-to="'+msgsnapshot.val().to+'" data-from="'+msgsnapshot.val().from+'" data-sname="'+msgsnapshot.val().senderName+'" data-rname="'+msgsnapshot.val().recipientName+'" id="'+msgsnapshot.key+'" data-toggle="modal" data-target="#myModal" onclick="reply(this)">reply</button></p><br></div><hr></div>').prependTo('#'+value)
 				}
 			})
