@@ -9,6 +9,7 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -23,6 +24,7 @@ import android.widget.TextView;
 import com.google.gson.JsonElement;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
@@ -560,7 +562,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("Search Input", searchInput);
         
         //        String URL = "https://www.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&titles=" + searchInput;
-                String URL = "http://www.answers.com/Q/" + searchInput;
+        //        String URL = "http://www.answers.com/Q/" + searchInput;
+                String URL = "http://qa.answers.com/Q/" + searchInput;
         
                 Element txt;
                 String result;
@@ -578,6 +581,7 @@ public class MainActivity extends AppCompatActivity {
                                 .replaceAll("<li>", "").replaceAll("</li>", "")
                                 .replaceAll("<ol>", "").replaceAll("</ol>", "")
                                 .replaceAll("<ul>", "").replaceAll("</ul>", "")
+                                .replaceAll("<a>", "").replaceAll("</a>", "")
                                 .replaceAll("-&gt;", " ").replaceAll("&nbsp;", "")
                                 .replaceAll( "\\+\\+\\+", "");
                     }catch(Exception e) {
