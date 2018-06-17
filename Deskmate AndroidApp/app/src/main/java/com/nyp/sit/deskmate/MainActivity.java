@@ -40,6 +40,10 @@ import ai.api.model.Fulfillment;
 import ai.api.model.Result;
 import ai.kitt.snowboy.SnowboyDetect;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 public class MainActivity extends AppCompatActivity {
     // View Variables
     private Button startAsrButton;
@@ -74,6 +78,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
         // TODO: Setup Components
         setupViews();
@@ -454,6 +461,10 @@ public class MainActivity extends AppCompatActivity {
                     if (speech.equalsIgnoreCase("end_session")) {
                         keepSession = false;
                         startTts("OK, wake me again if you need me.");
+                    } else if (speech.substring(0, 15).equalsIgnoreCase("search_function")) { 
+                        Log.e("Speech", speech.substring(16));
+                        String searchSpeech = getSearch(speech.substring(16));
+                        startTts(searchSpeech);
                     } else {
                         keepSession = true;
                         startTts(speech);
@@ -541,6 +552,86 @@ public class MainActivity extends AppCompatActivity {
             startHotword();
         }
     }
+
+    private String getSearch(String userInput) {    //Added this for search
+
+        //        String searchInput = userInput.replaceAll(" ", "%20");
+                String searchInput = userInput.replaceAll(" ", "_");
+                Log.e("Search Input", searchInput);
+        
+        //        String URL = "https://www.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&titles=" + searchInput;
+                String URL = "http://www.answers.com/Q/" + searchInput;
+        
+                Element txt;
+                String result;
+                Document doc = null;
+                try {
+                    doc = Jsoup.connect(URL).get();
+        
+                    try {
+                        txt = doc.select("div.answer_text").first();
+                        Log.e("txt", txt.toString());
+                        result = txt.toString().trim().replaceAll("<div class=\"answer_text\">", "")
+                                .replaceAll( "</div>", "").replaceAll("<b>", "")
+                                .replaceAll("</b>", "").replaceAll( "<i>", "")
+                                .replaceAll("</i>", "").replaceAll("<br>", "")
+                                .replaceAll("<li>", "").replaceAll("</li>", "")
+                                .replaceAll("<ol>", "").replaceAll("</ol>", "")
+                                .replaceAll("<ul>", "").replaceAll("</ul>", "")
+                                .replaceAll("-&gt;", " ").replaceAll("&nbsp;", "")
+                                .replaceAll( "\\+\\+\\+", "");
+                    }catch(Exception e) {
+                        result = "Unable to search. Please rephrase your question.";
+                    }
+        
+                    return  result;
+        
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+        
+        //       WIKI Version
+        
+        //        HttpURLConnection httpcon;
+        //        try {
+        //            httpcon = (HttpURLConnection) new URL(URL).openConnection();
+        //            httpcon.addRequestProperty("User-Agent", "Mozilla/5.0");
+        //
+        //            BufferedReader in = new BufferedReader(new InputStreamReader(httpcon.getInputStream()));
+        //
+        //            String responseSB;
+        //            String result;
+        //            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+        //                responseSB = in.lines().collect(Collectors.joining());
+        //                in.close();
+        //
+        //                try {
+        //                    result = "Search found! " + responseSB.split("extract\":\"")[1];
+        //
+        //                } catch (Exception e) {
+        //                    Log.e("Error", e.toString());
+        //                    result = "Unable to search. Please rephrase your question.";
+        //                }
+        //
+        //                Log.e("Result: ", result);
+        //
+        //            } else {
+        //                result = "Unable to search. Please use android version 7.0(Nougat) and up.";
+        //            }
+        //
+        //            String textToTell = result.length() > 270 ? result.substring(0, 270) : result;
+        //            Log.e("Reply Speech", textToTell);
+        //
+        //            return textToTell;
+        //
+        //        } catch (IOException e) {
+        //            e.printStackTrace();
+        //        }
+        
+                return "No search found!";
+        }
+
+
 
 //            new Timer().schedule(
 //                    new TimerTask() {
