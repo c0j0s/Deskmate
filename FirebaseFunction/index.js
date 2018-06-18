@@ -451,7 +451,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         var paperparam = false;
         homeworkDB.once('value',snapshot=>{
             snapshot.forEach(snap => {
-                if(snap.val().name.includes(paperName)){
+                if(snap.val().name.toLowerCase().includes(paperName.toLowerCase())){
                     paperparam = snap.val();
                     paperparam.key = snap.key;
                     const context = {
