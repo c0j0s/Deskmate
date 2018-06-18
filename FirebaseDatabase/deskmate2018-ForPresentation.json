@@ -64,25 +64,25 @@
           "questions" : [ {
             "id" : "0006",
             "status" : "correct",
-            "stuAns" : "C",
+            "stuAns" : "",
             "tryCount" : 0
           }, {
             "id" : "0005",
             "status" : "correct",
-            "stuAns" : "A",
+            "stuAns" : "",
             "tryCount" : 0
           }, {
             "id" : "0011",
             "status" : "correct",
-            "stuAns" : "A",
+            "stuAns" : "",
             "tryCount" : 0
           }, {
             "id" : "0010",
             "status" : "correct",
-            "stuAns" : "A",
+            "stuAns" : "",
             "tryCount" : 0
           } ],
-          "score" : 100,
+          "score" : 0,
           "status" : "incomplete",
           "totalScore" : 100
         },
