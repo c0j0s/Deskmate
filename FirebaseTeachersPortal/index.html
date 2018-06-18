@@ -165,12 +165,24 @@
 		function getData(data){
 			data.forEach(function(childSnapshot){
 				var userkey = childSnapshot.key;
+				var studyarea1;
+				var studyarea2;
 				//console.log(childSnapshot);
-					$('<div class= "card bg-light mb-3"><div id="heading2" class="card-header"><b>Name: '+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button></div><div class="card-body scrollmenu"><div class="card-deck child inline" id="details'+userkey+'"></div></div></div><p></p>').appendTo("#data");
+				if (childSnapshot.val().studyArea.home === true){
+					studyarea1 = "home";
+				}
+				if (childSnapshot.val().studyArea.school === true){
+					studyarea2 = " ,school"
+				}
+					$('<div class= "card bg-light mb-3"><div id="heading2" class="card-header"><b>Name: '+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button><div><span class=" badge badge-info" style="font-size: 20px;">level: p'+childSnapshot.val().stage+'</span><span class="pad badge badge-info">age: '+childSnapshot.val().age+'</span><span class="pad badge badge-info">study area: '+studyarea1 + studyarea2+'</span></div></div><div class="card-body scrollmenu"><div class="card-deck child inline" id="details'+userkey+'"></div></div></div><p></p>').appendTo("#data");
 						childSnapshot.child("homework").forEach(function(hwsnapshot){
 						//console.log(childSnapshot.val());
 								var qindex = 4;
-								$('<div class="card mb-3 one"><div class="heading4 bg-secondary text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/100</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div></div></div>').prependTo('#details'+userkey);
+								if(hwsnapshot.val().attempts > 0){
+									$('<div class="card mb-3 one"><div class="heading4 bg-success text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/100</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div></div></div>').prependTo('#details'+userkey);
+								}else{
+									$('<div class="card mb-3 one"><div class="heading4 bg-dark text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/100</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div></div></div>').prependTo('#details'+userkey);
+								}
 								hwsnapshot.child("questions").forEach(function(qnssnapshot){
 									$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="float-left p-2 heading3 card-text">Attempted tries: <span class="badge badge-info badge-pill">'+qnssnapshot.val().tryCount+'</span></p><span class="badge mt-2 badge-success  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></div>').appendTo('#'+hwsnapshot.key);
 									questionDb = firebase.database().ref('question');
@@ -190,7 +202,6 @@
 														else{
 															qnsid = [];
 															curruser = $(this).data("user");
-															//console.log(curruser);
 															qnsid.push(qesid);
 															console.log(qnsid);
 														}
