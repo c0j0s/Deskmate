@@ -98,9 +98,11 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         }).then(listOfPaper =>{
             var speech;
             if(listOfPaper.notCompleted.length !== 0){
-                speech = `Currently you have ${listOfPaper.notCompleted.length} not completed homework, they are `
+                speech = `Currently you have ${listOfPaper.notCompleted.length} incomplete homework, they are `
                 listOfPaper.notCompleted.forEach((item,index) => {
-                    if((listOfPaper.notCompleted.length - 1) === index){
+                    if(listOfPaper.notCompleted.length === 1){
+                        speech = speech + item + '.'
+                    }else if((listOfPaper.notCompleted.length - 1) === index){
                         speech = speech.slice(0, -2);
                         speech = speech + ' and ' + item + '.'
                     }else{
@@ -158,7 +160,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     }
 
     function confirmChangeHomework(agent){
-        beginQuestion(agent)
+        return beginQuestion(agent)
     }
 
     function beginQuestion(agent) {
@@ -167,6 +169,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         if(questionNumber === ""){
             questionNumber = 1;
         }
+        console.log('questionNumber:' + questionNumber)
         return getFBQuestions(agent,questionNumber)
         .then(currentQuestion => {
             if(currentQuestion === false){
@@ -185,6 +188,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                     }
                 };
                 agent.setContext(context)
+                console.log('currentQuestion: ' + currentQuestion)
                 return agent.add(formQuestion(questionNumber,currentQuestion));
             }
         }).catch(error => {
@@ -296,6 +300,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
     function getMessages(agent){
         agent.clearContext('paper')
+        agent.clearContext('sendmessage-followup')
         var userID = '0001';
         var senderName = param.senderName;
 
@@ -352,7 +357,8 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             }
         };
         agent.setContext(context)
-        agent.add(speech);
+        console.log('reading message:' + speech)
+        return agent.add(speech);
     }
 
     function replyMessage(agent){
@@ -406,7 +412,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             'from': user.key,
             'message': messageBody,
             'read': false,
-            'recipientName': recipient.name,
+            'recipientName': recipient.sal + ' ' + recipient.name,
             'replyTo': "",
             'senderName': user.name,
             'to': recipient.tId
@@ -465,7 +471,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         resolve => {
             var paper = agent.getContext('paper').parameters;
             var paperQuestions = paper.questions;
-
+            console.log('paperQuestions: ' + paperQuestions)
             if(questionNumber <= Object.keys(paperQuestions).length){
                 return questionDB.once('value', snap => {
                     agent.clearContext('currentQuestion');
@@ -494,6 +500,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         D :  ${currentQuestion.d}.
         What is your option?
         `;
+        console.log('questionSpeech: ' + speech)
         return speech;
     }
 
