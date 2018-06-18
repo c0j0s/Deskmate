@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -523,6 +524,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         // TODO: Start TTS
+        textToSpeech.setPitch(1);
+        textToSpeech.setSpeechRate(1);
+        textToSpeech.setLanguage(Locale.ENGLISH);
         textToSpeech.speak(text, textToSpeech.QUEUE_FLUSH,null);
         // TODO: Wait for end and start hotword
         Runnable runnable = new Runnable() {
@@ -583,9 +587,10 @@ public class MainActivity extends AppCompatActivity {
                                 .replaceAll("<ul>", "").replaceAll("</ul>", "")
                                 .replaceAll("<a>", "").replaceAll("</a>", "")
                                 .replaceAll("-&gt;", " ").replaceAll("&nbsp;", "")
-                                .replaceAll( "\\+\\+\\+", "");
+                                .replaceAll( "\\+\\+\\+", "").replaceAll("\\s+", " ");
+
                     }catch(Exception e) {
-                        result = "Unable to search. Please rephrase your question.";
+                        result = "Unable to search. Please rephrase your question. For example: What is, Where does, Which is.";
                     }
         
                     return  result;
@@ -631,10 +636,8 @@ public class MainActivity extends AppCompatActivity {
         //        } catch (IOException e) {
         //            e.printStackTrace();
         //        }
-        
                 return "No search found!";
         }
-
 
 
 //            new Timer().schedule(
