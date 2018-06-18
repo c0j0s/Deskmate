@@ -185,12 +185,12 @@
 								if(hwsnapshot.val().attempts > 0){
 									var formatdate = new Date(hwsnapshot.val().datetimeCompleted);
 									var datetime = formatdate.getFullYear() +'/' + formatdate.getMonth() +'/' +formatdate.getDate() + " " + formatdate.getHours() + ":" + formatdate.getSeconds();
-									$('<div class="card mb-3 one"><div class="heading4 bg-success text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div><p class="bg-secondary text-white p-2 pl-3">Completed on: '+ datetime + '</p></div></div>').prependTo('#details'+userkey);
+									$('<div class="card mb-3 one bg-secondary"><div class="heading4 bg-success text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div><p class="bg-secondary text-white p-2 pl-3">Completed on: '+ datetime + '</p></div></div>').prependTo('#details'+userkey);
 								}else{
 									$('<div class="card mb-3 one"><div class="heading4 bg-dark text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div></div></div>').prependTo('#details'+userkey);
 								}
 								hwsnapshot.child("questions").forEach(function(qnssnapshot){
-									$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="float-left p-2 heading3 card-text">Reattempt <span class="badge badge-info badge-pill">'+(qnssnapshot.val().tryCount === '' ? 0 : qnssnapshot.val().tryCount)+'</span> times</p><span class="badge mt-2 badge-success  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></div>').appendTo('#'+hwsnapshot.key);
+									$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="float-left pt-2 heading3 card-text">Reattempt <span class="badge badge-info badge-pill">'+(qnssnapshot.val().tryCount === '' ? 0 : qnssnapshot.val().tryCount)+'</span> times</p><span class="badge mt-2 badge-success  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></div>').appendTo('#'+hwsnapshot.key);
 									questionDb = firebase.database().ref('question');
 									questionDb.once('value', getQues)
 									function getQues(question){
