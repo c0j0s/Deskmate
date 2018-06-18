@@ -41,7 +41,7 @@ p{
 #nav-content{
 	width:90%;
 }
-nav{
+/* nav{
 	height: 112px;
     position: fixed;
     top: 0px;
@@ -51,7 +51,7 @@ nav{
     background-color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 8px 20px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
     z-index: 5;
-}
+} */
 .content{
 	margin-top:65px;
 }

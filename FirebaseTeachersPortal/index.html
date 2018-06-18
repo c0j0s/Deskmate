@@ -47,7 +47,7 @@
 	<div id="data">
 		
 	</div>
-		<div class="container">
+	<div class="container">
 
   <!-- Modal -->
   <div class="modal fade" id="myModal" role="dialog">
@@ -174,14 +174,16 @@
 				if (childSnapshot.val().studyArea.school === true){
 					studyarea2 = ", school"
 				}
-					$('<div class= "card bg-light mb-3"><div id="heading2" class="card-header"><b>Name: '+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button><div><span class=" badge badge-info" style="font-size: 20px;">Primary '+childSnapshot.val().stage+'</span><span class="pad badge badge-info">Age: '+childSnapshot.val().age+'</span><span class="pad badge badge-info">Study area: '+studyarea1 + studyarea2+'</span></div></div><div class="card-body scrollmenu"><div class="card-deck child inline" id="details'+userkey+'"></div></div></div><p></p>').appendTo("#data");
+					$('<div class= "card bg-light mb-3 shadow"><div id="heading2" class="card-header"><b>Name: '+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate Question</button><div><span class=" badge badge-info" style="font-size: 20px;">Primary '+childSnapshot.val().stage+'</span><span class="pad badge badge-info">Age: '+childSnapshot.val().age+'</span><span class="pad badge badge-info">Study area: '+studyarea1 + studyarea2+'</span></div></div><div class="card-body scrollmenu"><div class="card-deck child inline" id="details'+userkey+'"></div></div></div><p></p>').appendTo("#data");
 						childSnapshot.child("homework").forEach(function(hwsnapshot){
 						//console.log(childSnapshot.val());
 								var qindex = 4;
 								if(hwsnapshot.val().attempts > 0){
-									$('<div class="card mb-3 one"><div class="heading4 bg-success text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/100</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div></div></div>').prependTo('#details'+userkey);
+									var formatdate = new Date(hwsnapshot.val().datetimeCompleted);
+									var datetime = formatdate.getFullYear() +'/' + formatdate.getMonth() +'/' +formatdate.getDate() + " " + formatdate.getHours() + ":" + formatdate.getSeconds();
+									$('<div class="card mb-3 one"><div class="heading4 bg-success text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div><p class="bg-secondary text-white p-2 pl-3">Completed on: '+ datetime + '</p></div></div>').prependTo('#details'+userkey);
 								}else{
-									$('<div class="card mb-3 one"><div class="heading4 bg-dark text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/100</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div></div></div>').prependTo('#details'+userkey);
+									$('<div class="card mb-3 one"><div class="heading4 bg-dark text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div></div></div>').prependTo('#details'+userkey);
 								}
 								hwsnapshot.child("questions").forEach(function(qnssnapshot){
 									$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="float-left p-2 heading3 card-text">Reattempt <span class="badge badge-info badge-pill">'+(qnssnapshot.val().tryCount === '' ? 0 : qnssnapshot.val().tryCount)+'</span> times</p><span class="badge mt-2 badge-success  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></div>').appendTo('#'+hwsnapshot.key);
