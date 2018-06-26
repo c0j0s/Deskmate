@@ -59,7 +59,7 @@
         },
         "-LFG0TCyDbA3i8MUUsjA" : {
           "attempts" : 0,
-          "datetimeCompleted" : "2018-06-18T05:18:19.582Z",
+          "datetimeCompleted" : "2018-06-21T03:16:55.192Z",
           "name" : "Science Paper 2",
           "questions" : [ {
             "id" : "0006",
@@ -83,35 +83,7 @@
             "tryCount" : 0
           } ],
           "score" : 0,
-          "status" : "incomplete",
-          "totalScore" : 100
-        },
-        "-LFGIb9JNCHTixYZFv44" : {
-          "attempts" : 0,
-          "name" : "Quiz",
-          "questions" : [ {
-            "id" : "0007",
-            "status" : "",
-            "stuAns" : "",
-            "tryCount" : ""
-          }, {
-            "id" : "0008",
-            "status" : "",
-            "stuAns" : "",
-            "tryCount" : ""
-          }, {
-            "id" : "0012",
-            "status" : "",
-            "stuAns" : "",
-            "tryCount" : ""
-          }, {
-            "id" : "0009",
-            "status" : "",
-            "stuAns" : "",
-            "tryCount" : ""
-          } ],
-          "score" : 0,
-          "status" : "not completed",
+          "status" : "completed",
           "totalScore" : 100
         }
       },
