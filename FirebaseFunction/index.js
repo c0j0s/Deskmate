@@ -569,6 +569,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         var user = agent.getContext('user').parameters;
         var topic = currentQuestion.topic;
         var newScore;
+        console.log(user.topicScore)
         console.log('topics: ' + topic)
         console.log('user.topicScore[topic]: ' + user.topicScore[topic])
         if(typeof(user.topicScore[topic]) === 'undefined'){
@@ -578,8 +579,15 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             console.log("try count: " + tryCount)
             newScore = user.topicScore[topic] + tryCount;
         }
+        user.topicScore[topic] = newScore;
+        console.log('new user.topicScore[topic]: ' + user.topicScore[topic])
         //update context value to match database
-        agent.getContext('user').parameters.user.topicScore[topic] = newScore;
+        const context = {
+            'name': 'user', 
+            'lifespan': 30, 
+            'parameters': user,
+        };
+        agent.setContext(context);
         
         console.log('new topic score: '+ newScore)
         //post to database

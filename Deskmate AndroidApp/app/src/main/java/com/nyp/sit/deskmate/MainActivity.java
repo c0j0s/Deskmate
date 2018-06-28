@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupAsr() {
         // TODO: Setup ASR
         // init speechRecogniser
-        speechRecognizer = speechRecognizer.createSpeechRecognizer(this);
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
 
         // init listener states
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
@@ -424,7 +424,6 @@ public class MainActivity extends AppCompatActivity {
 
                 // TODO: Start ASR
                 speechRecognizer.startListening(recognizerIntent);
-
             }
         };
 
