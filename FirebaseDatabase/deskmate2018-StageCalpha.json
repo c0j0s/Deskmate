@@ -38,32 +38,32 @@
       "competency" : 0.1,
       "homework" : {
         "1" : {
-          "attempts" : 4,
+          "attempts" : 8,
           "avgDiff" : 5,
-          "datetimeCompleted" : "2018-06-28T06:39:09.059Z",
+          "datetimeCompleted" : "2018-06-29T03:19:37.752Z",
           "name" : "Science Paper 1",
           "questions" : [ {
             "id" : "0001",
-            "status" : "wrong",
-            "stuAns" : "A",
+            "status" : "correct",
+            "stuAns" : "B",
             "tryCount" : 1
           }, {
             "id" : "0002",
             "status" : "correct",
             "stuAns" : "C",
-            "tryCount" : 3
+            "tryCount" : 1
           }, {
             "id" : "0003",
             "status" : "correct",
             "stuAns" : "C",
-            "tryCount" : 2
+            "tryCount" : 0
           }, {
             "id" : "0004",
             "status" : "correct",
             "stuAns" : "D",
-            "tryCount" : 2
+            "tryCount" : 1
           } ],
-          "score" : 0,
+          "score" : 25,
           "sessionStats" : {
             "endTime" : "",
             "startTime" : ""
@@ -126,7 +126,8 @@
         }
       },
       "topicScore" : {
-        "living things" : 9,
+        "living things" : 10,
+        "systems" : 2,
         "test" : 5
       },
       "tts" : 1
@@ -152,7 +153,8 @@
       "c" : "Fungi can move from place to place on its own",
       "d" : "Fungi feeds on other living things, which may be dead or alive",
       "marks" : 25,
-      "question" : "Which of the following is false about fungi?"
+      "question" : "Which of the following is false about fungi?",
+      "topic" : "living things"
     },
     "0003" : {
       "a" : "All bacteria are harmful to man",
@@ -161,7 +163,8 @@
       "c" : "Bacteria can be found everywhere",
       "d" : "Bacteria can be seen with naked eye",
       "marks" : 25,
-      "question" : "Which of the following is false about fungi?"
+      "question" : "Which of the following is false about fungi?",
+      "topic" : "living things"
     },
     "0004" : {
       "a" : "A and C only",
@@ -170,7 +173,8 @@
       "c" : "B, C and D only",
       "d" : "A, B, C and D",
       "marks" : 25,
-      "question" : "which of the following are carried in the blood in this system? A: water, B: Oxygen, C: digested food, D: carbon dioxide"
+      "question" : "which of the following are carried in the blood in this system? A: water, B: Oxygen, C: digested food, D: carbon dioxide",
+      "topic" : "systems"
     },
     "0005" : {
       "a" : "a bird lays eggs in a nest",
@@ -181,7 +185,8 @@
       "difficulty" : 5,
       "marks" : 25,
       "question" : "which of the following is not an example of a living thing responding to changes around them?",
-      "theme" : "diversity"
+      "theme" : "diversity",
+      "topic" : "living things"
     },
     "0006" : {
       "a" : "They are both aquatic plants",
@@ -192,7 +197,8 @@
       "difficulty" : 6,
       "marks" : 25,
       "question" : "What is the similarity between a mushroom and a bird's nest fern",
-      "theme" : "diversity"
+      "theme" : "diversity",
+      "topic" : "living things"
     },
     "0007" : {
       "a" : "P, Q and R only",
@@ -203,7 +209,8 @@
       "difficulty" : 4,
       "marks" : 25,
       "question" : "in which of the following parts of the digestive system are digestive juices produced?",
-      "theme" : "systems"
+      "theme" : "systems",
+      "topic" : "systems"
     },
     "0008" : {
       "a" : "P, Q, R, S",
@@ -225,7 +232,8 @@
       "difficulty" : 1,
       "marks" : 25,
       "question" : "which of the following does not make use of magnet work",
-      "theme" : "magnet"
+      "theme" : "magnet",
+      "topic" : "magnets"
     },
     "0010" : {
       "a" : "All bacteria are harmful",
@@ -236,7 +244,8 @@
       "difficulty" : 8,
       "marks" : 25,
       "question" : "Which of the following statement is false?",
-      "theme" : "magnet"
+      "theme" : "diversity",
+      "topic" : "living things"
     },
     "0011" : {
       "a" : "Electromagnet",
@@ -247,7 +256,8 @@
       "difficulty" : 7,
       "marks" : 25,
       "question" : "A magnet is also known as",
-      "theme" : "magnet"
+      "theme" : "magnet",
+      "topic" : "magnets"
     },
     "0012" : {
       "a" : "A seed is not a living thing and it cannot move",
@@ -258,7 +268,8 @@
       "difficulty" : 4,
       "marks" : 25,
       "question" : "based on the chart above, which of the following correctly represents living thing P?",
-      "theme" : "diversity"
+      "theme" : "diversity",
+      "topic" : "magnets"
     }
   },
   "teacher" : {
