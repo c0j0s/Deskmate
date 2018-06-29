@@ -1,31 +1,28 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Teachers portal</title>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Welcome to Teachers portal</title>
 	<link rel="stylesheet" type = "text/css" href="css/bootstrap-grid.css">
 	<link rel="stylesheet" type = "text/css" href="css/bootstrap-reboot.css">
 	<link rel="stylesheet" type = "text/css" href="css/bootstrap.css">
 	<link rel="stylesheet" type = "text/css" href="css/styling.css">
+	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
 	<script src="js/jquery.js"></script>
 	<script src="js/bootstrap.js"></script>
-	
-
-	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
-
-
-  </head>
-  <body>
+	<script src="js/master.js"></script>
+</head>
+<body>
 	<nav class="navbar navbar-expand-lg navbar-light bg-light">
 		<div class="container">
-		<a class="navbar-brand" href="https://deskmate2018.firebaseapp.com/">
+			<a class="navbar-brand" href="https://deskmate2018.firebaseapp.com/">
 				<img src="https://firebasestorage.googleapis.com/v0/b/deskmate2018.appspot.com/o/ic_launcher.png?alt=media&token=fa090ccd-e14e-4099-b3b7-cf874a035ad6"/>
-			Deskmate
-		</a>
-		<div class="" id="navbarNav collapse navbar-collapse">
-		<ul class="navbar-nav mr-auto">
-				<li class="nav-item">
+				Deskmate
+			</a>
+			<div class="" id="navbarNav collapse navbar-collapse">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item">
 						<a class="nav-link active" href="index.html">
 							Home
 						</a>
@@ -35,61 +32,50 @@
 							Messages
 						</a>
 					</li>
-		</ul>
+				</ul>
+			</div>
 		</div>
-</div>
 	</nav>
 	<div class="container content">
 		<h2 id="heading1">
 			Welcome, Teachers
 		</h2>
-	
-	<div id="data">
 		
+		<div id="data">
+			
+		</div>
+		<div class="container">
+			<!-- Modal -->
+			<div class="modal fade" id="myModal" role="dialog">
+				<div class="modal-dialog">
+					
+					<!-- Modal content-->
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">Modal Header</h4>
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+						</div>
+						<div class="modal-body">
+							Paper Name:<input class="form-control input-sm" type="text" name="papername" id = "pName"></input>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal" onclick="writetoDB()">Submit</button>
+						</div>
+					</div>
+					
+				</div>
+			</div>
+			
+		</div>
 	</div>
-	<div class="container">
-  <!-- Modal -->
-  <div class="modal fade" id="myModal" role="dialog">
-    <div class="modal-dialog">
-    
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-header">
-		  <h4 class="modal-title">Modal Header</h4>
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-        </div>
-        <div class="modal-body">
-          Paper Name:<input class="form-control input-sm" type="text" name="papername" id = "pName"></input>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal" onclick="writetoDB()">Submit</button>
-        </div>
-      </div>
-      
-    </div>
-  </div>
-  
-</div>
-	</div>
-
+	
 	<footer class="container-fluid bg-light mt-5">
 		<div class="container text-center p-3">
-				@Copyright Deskmate 2018 
+			@Copyright Deskmate 2018 
 		</div>
 	</footer>
-    <script>
-        
-        //The Firebase SDK is initialized and available here!
-		 var config = {
-			apiKey: "AIzaSyB29exuhOXpePNSnW4UaGd8dhSppgYbYTo",
-			authDomain: "deskmate2018.firebaseapp.com",
-			databaseURL: "https://deskmate2018.firebaseio.com",
-			projectId: "deskmate2018",
-			storageBucket: "deskmate2018.appspot.com",
-			messagingSenderId: "876434687063"
-		};
-			firebase.initializeApp(config);
-        var studentProfileDb = firebase.database().ref('profile');
+	<script>
+		var studentProfileDb = firebase.database().ref('profile');
 		studentProfileDb.once('value', getData)
 		var questionDb;
 		var qnsid = [];
@@ -107,30 +93,30 @@
 			function getQues(question){
 				question.forEach(function(quesSnapshot){
 					var qesid = quesSnapshot.key;
-						if (qesid == i){
-							if(a.length < qnsid.length){
-								if(qnsid.indexOf(qesid) === -1){
-									a.push(quesSnapshot.key);
-									console.log(a);
-								}
+					if (qesid == i){
+						if(a.length < qnsid.length){
+							if(qnsid.indexOf(qesid) === -1){
+								a.push(quesSnapshot.key);
+								console.log(a);
 							}
 						}
-						i++;
+					}
+					i++;
 				})
 			}
 			return ids = $(id).data("user");
 		}
 		function writetoDB(){
-		console.log(ids);
-		papername = document.getElementById('pName').value;
-		console.log(papername);
-				for (var c = 0; c < 4; c++){
-					randomvalue = a[Math.floor(Math.random() * a.length)];
-					index = a.indexOf(randomvalue);
-					ranques.push(randomvalue);
-					console.log(ranques);
-					a.splice(index,1);
-				}
+			console.log(ids);
+			papername = document.getElementById('pName').value;
+			console.log(papername);
+			for (var c = 0; c < 4; c++){
+				randomvalue = a[Math.floor(Math.random() * a.length)];
+				index = a.indexOf(randomvalue);
+				ranques.push(randomvalue);
+				console.log(ranques);
+				a.splice(index,1);
+			}
 			firebase.database().ref('profile/'+ids+'/homework').push({
 				status: "not completed",
 				attempts: 0,
@@ -165,7 +151,7 @@
 				}
 				
 			})
-			}
+		}
 		function getData(data){
 			data.forEach(function(childSnapshot){
 				var userkey = childSnapshot.key;
@@ -178,50 +164,48 @@
 				if (childSnapshot.val().studyArea.school === true){
 					studyarea2 = ", school"
 				}
-					$('<div class= "card bg-light mb-3"><div id="heading2" class="card-header"><b>Name: '+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate New Homework for '+ childSnapshot.val().name+'</button><div><span class=" badge badge-info" style="font-size: 20px;">Primary '+childSnapshot.val().stage+'</span><span class="pad badge badge-info">Age: '+childSnapshot.val().age+'</span><span class="pad badge badge-info">Study area: '+studyarea1 + studyarea2+'</span></div></div><div class="card-body scrollmenu"><div class="card-deck child inline" id="details'+userkey+'"></div></div></div><p></p>').appendTo("#data");
-						childSnapshot.child("homework").forEach(function(hwsnapshot){
-						//console.log(childSnapshot.val());
-								var qindex = 4;
-								if(hwsnapshot.val().attempts > 0){
-									var formatdate = new Date(hwsnapshot.val().datetimeCompleted);
-									var datetime = formatdate.getFullYear() +'/' + formatdate.getMonth() +'/' +formatdate.getDate() + " " + formatdate.getHours() + ":" + formatdate.getSeconds();
-									$('<div class="card mb-3 one bg-secondary"><div class="heading4 bg-success text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div><p class="bg-secondary text-white p-2 pl-3">Completed on: '+ datetime + '</p></div></div>').prependTo('#details'+userkey);
-								}else{
-									$('<div class="card mb-3 one"><div class="heading4 bg-dark text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div></div></div>').prependTo('#details'+userkey);
+				$('<div class= "card bg-light mb-3"><div id="heading2" class="card-header"><b>Name: '+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate New Homework for '+ childSnapshot.val().name+'</button><div><span class=" badge badge-info" style="font-size: 20px;">Primary '+childSnapshot.val().stage+'</span><span class="pad badge badge-info">Age: '+childSnapshot.val().age+'</span><span class="pad badge badge-info">Study area: '+studyarea1 + studyarea2+'</span></div></div><div class="card-body scrollmenu"><div class="card-deck child inline" id="details'+userkey+'"></div></div></div><p></p>').appendTo("#data");
+				childSnapshot.child("homework").forEach(function(hwsnapshot){
+					
+					var qindex = 4;
+					if(hwsnapshot.val().attempts > 0){
+						$('<div class="card mb-3 one bg-secondary"><div class="heading4 bg-success text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div><p class="bg-secondary text-white p-2 pl-3">Completed on: '+ formatDate(hwsnapshot.val().datetimeCompleted) + '</p></div></div>').prependTo('#details'+userkey);
+					}else{
+						$('<div class="card mb-3 one"><div class="heading4 bg-dark text-white card-header">'+hwsnapshot.val().name+'<div class="score"><b>'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</b></div></div><div class="list-group" id="'+hwsnapshot.key+'">  </div></div></div>').prependTo('#details'+userkey);
+					}
+					hwsnapshot.child("questions").forEach(function(qnssnapshot){
+						$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="float-left pt-2 heading3 card-text">Reattempt <span class="badge badge-info badge-pill">'+(qnssnapshot.val().tryCount === '' ? 0 : qnssnapshot.val().tryCount)+'</span> times</p><span class="badge mt-2 badge-success  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></div>').appendTo('#'+hwsnapshot.key);
+						questionDb = firebase.database().ref('question');
+						questionDb.once('value', getQues)
+						function getQues(question){
+							//console.log(question);
+							
+							question.forEach(function(quesSnapshot){
+								var qesid = quesSnapshot.key;
+								if( qesid === qnssnapshot.val().id){
+									$('<p class="heading3 card-text"><b>'+ (qindex) + ") " + quesSnapshot.val().question+'</b></p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
+									$("#"+userkey).on('click',function() {
+										if(curruser == $(this).data("user")){
+											qnsid.push(qesid);
+											console.log(qnsid);
+										}
+										else{
+											qnsid = [];
+											curruser = $(this).data("user");
+											qnsid.push(qesid);
+											console.log(qnsid);
+										}
+									})
+									qindex--;
 								}
-								hwsnapshot.child("questions").forEach(function(qnssnapshot){
-									$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="float-left pt-2 heading3 card-text">Reattempt <span class="badge badge-info badge-pill">'+(qnssnapshot.val().tryCount === '' ? 0 : qnssnapshot.val().tryCount)+'</span> times</p><span class="badge mt-2 badge-success  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></div>').appendTo('#'+hwsnapshot.key);
-									questionDb = firebase.database().ref('question');
-									questionDb.once('value', getQues)
-									function getQues(question){
-									//console.log(question);
-										
-										question.forEach(function(quesSnapshot){
-											var qesid = quesSnapshot.key;
-												if( qesid === qnssnapshot.val().id){
-													$('<p class="heading3 card-text"><b>'+ (qindex) + ") " + quesSnapshot.val().question+'</b></p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
-													$("#"+userkey).on('click',function() {
-														if(curruser == $(this).data("user")){
-															qnsid.push(qesid);
-															console.log(qnsid);
-														}
-														else{
-															qnsid = [];
-															curruser = $(this).data("user");
-															qnsid.push(qesid);
-															console.log(qnsid);
-														}
-													})
-													qindex--;
-												}
-										})
-										
-									}
-								})
-						})
+							})
+							
+						}
+					})
+				})
 			})
 		}
 		
-    </script>
-  </body>
+	</script>
+</body>
 </html>

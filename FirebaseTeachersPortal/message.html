@@ -1,94 +1,80 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Messages</title>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Messages</title>
 	<link rel="stylesheet" type = "text/css" href="css/bootstrap-grid.css">
 	<link rel="stylesheet" type = "text/css" href="css/bootstrap-reboot.css">
 	<link rel="stylesheet" type = "text/css" href="css/bootstrap.css">
 	<link rel="stylesheet" type = "text/css" href="css/styling.css">
+	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
 	<script src="js/jquery.js"></script>
 	<script src="js/bootstrap.js"></script>
-	
-
-	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
-
-
-  </head>
-  <body>
-			<nav class="navbar navbar-expand-lg navbar-light bg-light">
-					<div class="container">
-					<a class="navbar-brand" href="https://deskmate2018.firebaseapp.com/">
-							<img src="https://firebasestorage.googleapis.com/v0/b/deskmate2018.appspot.com/o/ic_launcher.png?alt=media&token=fa090ccd-e14e-4099-b3b7-cf874a035ad6"/>
-						Deskmate
-					</a>
-					<div class="" id="navbarNav collapse navbar-collapse">
-					<ul class="navbar-nav mr-auto">
-							<li class="nav-item">
-									<a class="nav-link " href="index.html">
-										Home
-									</a>
-								</li>
-								<li class="nav-item">
-									<a class="nav-link active" href="message.html">
-										Messages
-									</a>
-								</li>
-					</ul>
-					</div>
+	<script src="js/master.js"></script>
+</head>
+<body>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<div class="container">
+			<a class="navbar-brand" href="https://deskmate2018.firebaseapp.com/">
+				<img src="https://firebasestorage.googleapis.com/v0/b/deskmate2018.appspot.com/o/ic_launcher.png?alt=media&token=fa090ccd-e14e-4099-b3b7-cf874a035ad6"/>
+				Deskmate
+			</a>
+			<div class="" id="navbarNav collapse navbar-collapse">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item">
+						<a class="nav-link " href="index.html">
+							Home
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link active" href="message.html">
+							Messages
+						</a>
+					</li>
+				</ul>
 			</div>
-				</nav>
+		</div>
+	</nav>
 	<div class="content"></div>
 	<div class="container">
-			<h2 id="heading1">
-					Here are your messages
+		<h2 id="heading1">
+			Here are your messages
 		</h2>
 		<div id="content">
 			
 		</div>
 	</div>
 	<div class="container">
-
-  <!-- Modal -->
-  <div class="modal fade" id="myModal" role="dialog">
-    <div class="modal-dialog">
-    
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-header">
-		  <h4 class="modal-title">Modal Header</h4>
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-        </div>
-        <div class="modal-body">
-		  Message:<textarea class="form-control input-sm" name="Msg" id = "msg"></textarea>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal" onclick="writetoDB()">Submit</button>
-        </div>
-      </div>
-      
-    </div>
-  </div>
-  
-</div>
-<footer class="container-fluid bg-light mt-5">
+		
+		<!-- Modal -->
+		<div class="modal fade" id="myModal" role="dialog">
+			<div class="modal-dialog">
+				
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">What is your reply message?</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						Message:<textarea class="form-control input-sm" name="Msg" id = "msg"></textarea>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal" onclick="writetoDB()">Submit</button>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+		
+	</div>
+	<footer class="container-fluid bg-light mt-5">
 		<div class="container text-center p-3">
-				@Copyright Deskmate 2018 
+			@Copyright Deskmate 2018 
 		</div>
 	</footer>
-    <script>
-        
-        //The Firebase SDK is initialized and available here!
-		 var config = {
-			apiKey: "AIzaSyB29exuhOXpePNSnW4UaGd8dhSppgYbYTo",
-			authDomain: "deskmate2018.firebaseapp.com",
-			databaseURL: "https://deskmate2018.firebaseio.com",
-			projectId: "deskmate2018",
-			storageBucket: "deskmate2018.appspot.com",
-			messagingSenderId: "876434687063"
-		};
-		firebase.initializeApp(config);
+	<script>
 		var messageDb = firebase.database().ref('messages');
 		messageDb.once('value', getmessage)
 		var value;
@@ -101,18 +87,27 @@
 		var formatdate;
 		function getmessage(message){
 			message.forEach(function(msgsnapshot){
-			value = msgsnapshot.val().replyTo;
-			formatdate = new Date(msgsnapshot.val().datetime);
-			var datetime = formatdate.getFullYear() +'/' + formatdate.getMonth() +'/' +formatdate.getDate();
-				//console.log(value);
+				value = msgsnapshot.val().replyTo;
+
 				if(value === "" || value === undefined){
-					$('<div class="card bg-light mb-3"><div class="card-header">Name: '+msgsnapshot.val().senderName+'</div><div class="card-body" data-msg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div id="'+msgsnapshot.key+'"><div class="card-text" data-indvmsg="'+msgsnapshot.key+'"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+datetime+'<button class="btn" data-indvmsg="'+msgsnapshot.key+'" data-to="'+msgsnapshot.val().to+'" data-from="'+msgsnapshot.val().from+'" data-sname="'+msgsnapshot.val().senderName+'" data-rname="'+msgsnapshot.val().recipientName+'" id="'+msgsnapshot.key+'" data-toggle="modal" data-target="#myModal" onclick="reply(this)">reply</button></p><br></div><hr></div></div></div>').prependTo('#content');
+					let element = '<div class="card bg-light mb-3">'
+						+ '<div class="card-header">Name: '+msgsnapshot.val().senderName+'</div>'
+						+ '<div class="card-body" data-msg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'">'
+						+ '<div id="'+msgsnapshot.key+'"><div class="card-text" data-indvmsg="'+msgsnapshot.key+'">'
+						+ '<p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p>'
+						+ '<br>'
+						+ '<p>'+msgsnapshot.val().message+'</p><br><p>'+formatDate(msgsnapshot.val().datetime)
+						+ '<button class="btn" data-indvmsg="'+msgsnapshot.key+'" data-to="'+msgsnapshot.val().to+'" data-from="'+msgsnapshot.val().from+'" data-sname="'+msgsnapshot.val().senderName+'" data-rname="'+msgsnapshot.val().recipientName+'" id="'+msgsnapshot.key+'" data-toggle="modal" data-target="#myModal" onclick="reply(this)">reply</button>'
+						+ '</p>'
+						+ '<br>'
+						+ '</div><hr></div></div></div>'
+					$(element).prependTo('#content');
 				}else if(value != "" && msgsnapshot.val().from.includes("T")){
-					$('<div data-indvmsg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+datetime+'</p></div><hr></div>').prependTo('#'+value);
+					$('<div data-indvmsg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+formatDate(msgsnapshot.val().datetime)+'</p></div><hr></div>').prependTo('#'+value);
 				}
 				else{
-				console.log(value);
-				$('<div data-indvmsg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+datetime+'<button class="btn" data-indvmsg="'+msgsnapshot.key+'" data-to="'+msgsnapshot.val().to+'" data-from="'+msgsnapshot.val().from+'" data-sname="'+msgsnapshot.val().senderName+'" data-rname="'+msgsnapshot.val().recipientName+'" id="'+msgsnapshot.key+'" data-toggle="modal" data-target="#myModal" onclick="reply(this)">reply</button></p><br></div><hr></div>').prependTo('#'+value)
+					console.log(value);
+					$('<div data-indvmsg="'+msgsnapshot.key+'" id="'+msgsnapshot.key+'"><div class="card-text"><p>From: '+msgsnapshot.val().senderName+'</p><p>To: '+msgsnapshot.val().recipientName+'</p><br><p>'+msgsnapshot.val().message+'</p><br><p>'+formatDate(msgsnapshot.val().datetime)+'<button class="btn" data-indvmsg="'+msgsnapshot.key+'" data-to="'+msgsnapshot.val().to+'" data-from="'+msgsnapshot.val().from+'" data-sname="'+msgsnapshot.val().senderName+'" data-rname="'+msgsnapshot.val().recipientName+'" id="'+msgsnapshot.key+'" data-toggle="modal" data-target="#myModal" onclick="reply(this)">reply</button></p><br></div><hr></div>').prependTo('#'+value)
 				}
 			})
 		}
@@ -123,23 +118,23 @@
 			tids = $(id).data("to");
 			sids = $(id).data("from");
 		}
-
+		
 		function writetoDB(){
-		Msg = document.getElementById('msg').value;
-		var date = 	new Date().toISOString();
-		console.log(date);
-		firebase.database().ref('messages/').push({
-			datetime: date,
-			from: tids,
-			message: Msg,
-			read: false,
-			recipientName: Rname,
-			replyTo: Nid,
-			senderName: Sname,
-			to: sids,
-		})
+			Msg = document.getElementById('msg').value;
+			var date = 	new Date().toISOString();
+			console.log(date);
+			firebase.database().ref('messages/').push({
+				datetime: date,
+				from: tids,
+				message: Msg,
+				read: false,
+				recipientName: Rname,
+				replyTo: Nid,
+				senderName: Sname,
+				to: sids,
+			})
 		}
 		
-    </script>
-  </body>
+	</script>
+</body>
 </html>
