@@ -1,0 +1,271 @@
+{
+  "feedback" : {
+    "0000000000" : {
+      "datetime" : "2018-06-21T03:16:55.192Z",
+      "feedback" : "test",
+      "read" : "tommy tan needs more practice on his science paper",
+      "sId" : "0001",
+      "tId" : "T001",
+      "teacherName" : "Mr ken"
+    }
+  },
+  "messages" : {
+    "-LFGGKTxXzKPcioJiDxm" : {
+      "datetime" : "2018-06-18T05:01:52.695Z",
+      "from" : "0001",
+      "message" : "can i meet you on monday, i have something to ask",
+      "read" : false,
+      "recipientName" : "mr ken",
+      "replyTo" : "",
+      "senderName" : "Tommy Tan",
+      "to" : "T001"
+    },
+    "-LFGGRjmfCOrobeZKIz4" : {
+      "datetime" : "2018-06-18T05:02:26.566Z",
+      "from" : "T001",
+      "message" : "sure, how about monday 3pm?",
+      "read" : false,
+      "recipientName" : "Tommy Tan",
+      "replyTo" : "-LFGGKTxXzKPcioJiDxm",
+      "senderName" : "mr ken",
+      "to" : "0001"
+    }
+  },
+  "profile" : {
+    "0001" : {
+      "age" : 8,
+      "avgHwDiff" : 5,
+      "competency" : 0.1,
+      "homework" : {
+        "1" : {
+          "attempts" : 4,
+          "avgDiff" : 5,
+          "datetimeCompleted" : "2018-06-28T06:39:09.059Z",
+          "name" : "Science Paper 1",
+          "questions" : [ {
+            "id" : "0001",
+            "status" : "wrong",
+            "stuAns" : "A",
+            "tryCount" : 1
+          }, {
+            "id" : "0002",
+            "status" : "correct",
+            "stuAns" : "C",
+            "tryCount" : 3
+          }, {
+            "id" : "0003",
+            "status" : "correct",
+            "stuAns" : "C",
+            "tryCount" : 2
+          }, {
+            "id" : "0004",
+            "status" : "correct",
+            "stuAns" : "D",
+            "tryCount" : 2
+          } ],
+          "score" : 0,
+          "sessionStats" : {
+            "endTime" : "",
+            "startTime" : ""
+          },
+          "status" : "completed",
+          "totalScore" : 100
+        },
+        "-LFG0TCyDbA3i8MUUsjA" : {
+          "attempts" : 0,
+          "datetimeCompleted" : "2018-06-21T03:16:55.192Z",
+          "name" : "Science Paper 2",
+          "questions" : [ {
+            "id" : "0006",
+            "status" : "correct",
+            "stuAns" : "",
+            "tryCount" : 0
+          }, {
+            "id" : "0005",
+            "status" : "correct",
+            "stuAns" : "",
+            "tryCount" : 0
+          }, {
+            "id" : "0011",
+            "status" : "correct",
+            "stuAns" : "",
+            "tryCount" : 0
+          }, {
+            "id" : "0010",
+            "status" : "correct",
+            "stuAns" : "",
+            "tryCount" : 0
+          } ],
+          "score" : 0,
+          "status" : "completed",
+          "totalScore" : 100
+        }
+      },
+      "name" : "Tommy Tan",
+      "point" : 0,
+      "stage" : 3,
+      "studentAbility" : {
+        "handTouch" : true,
+        "hearing" : true,
+        "selfMove" : true,
+        "sight" : true,
+        "speak" : true
+      },
+      "studyArea" : {
+        "home" : true,
+        "school" : true
+      },
+      "teacherList" : {
+        "000000000" : {
+          "class" : "3A",
+          "name" : "ken",
+          "sal" : "mr",
+          "stage" : 3,
+          "subject" : "science",
+          "tId" : "T001"
+        }
+      },
+      "topicScore" : {
+        "living things" : 9,
+        "test" : 5
+      },
+      "tts" : 1
+    }
+  },
+  "question" : {
+    "0001" : {
+      "a" : "Both reproduces by spores",
+      "answer" : "b",
+      "b" : "Both make their own food",
+      "c" : "Both can be useful or harmful to us",
+      "d" : "Both cannot be seen under microscope",
+      "difficulty" : 5,
+      "marks" : 25,
+      "question" : "Which of the following is true about both fungi and bacteria?",
+      "theme" : "diversity",
+      "topic" : "living things"
+    },
+    "0002" : {
+      "a" : "Fungi an reproduce",
+      "answer" : "c",
+      "b" : "Not all fungi can be seen without microscopes",
+      "c" : "Fungi can move from place to place on its own",
+      "d" : "Fungi feeds on other living things, which may be dead or alive",
+      "marks" : 25,
+      "question" : "Which of the following is false about fungi?"
+    },
+    "0003" : {
+      "a" : "All bacteria are harmful to man",
+      "answer" : "c",
+      "b" : "Bacteria can make their own food.",
+      "c" : "Bacteria can be found everywhere",
+      "d" : "Bacteria can be seen with naked eye",
+      "marks" : 25,
+      "question" : "Which of the following is false about fungi?"
+    },
+    "0004" : {
+      "a" : "A and C only",
+      "answer" : "d",
+      "b" : "B and D only",
+      "c" : "B, C and D only",
+      "d" : "A, B, C and D",
+      "marks" : 25,
+      "question" : "which of the following are carried in the blood in this system? A: water, B: Oxygen, C: digested food, D: carbon dioxide"
+    },
+    "0005" : {
+      "a" : "a bird lays eggs in a nest",
+      "answer" : "a",
+      "b" : "a snail hides itself in the shell when touch",
+      "c" : "a dog barks when a stranger approaches it",
+      "d" : "a plant grows toward the direction of the sunlight",
+      "difficulty" : 5,
+      "marks" : 25,
+      "question" : "which of the following is not an example of a living thing responding to changes around them?",
+      "theme" : "diversity"
+    },
+    "0006" : {
+      "a" : "They are both aquatic plants",
+      "answer" : "c",
+      "b" : "They both can make their own food",
+      "c" : "They can reproduce by spores",
+      "d" : "They have seed leaves",
+      "difficulty" : 6,
+      "marks" : 25,
+      "question" : "What is the similarity between a mushroom and a bird's nest fern",
+      "theme" : "diversity"
+    },
+    "0007" : {
+      "a" : "P, Q and R only",
+      "answer" : "c",
+      "b" : "P, R and U only",
+      "c" : "Q, R and S only",
+      "d" : "Q, S and U only",
+      "difficulty" : 4,
+      "marks" : 25,
+      "question" : "in which of the following parts of the digestive system are digestive juices produced?",
+      "theme" : "systems"
+    },
+    "0008" : {
+      "a" : "P, Q, R, S",
+      "answer" : "c",
+      "b" : "P, Q, R, U",
+      "c" : "P, Q, R, S, U, T",
+      "d" : "P, Q, R, U, S, T",
+      "difficulty" : 2,
+      "marks" : 25,
+      "question" : "which of the following shows the correct sequence until digestion of food is completed?",
+      "theme" : "systems"
+    },
+    "0009" : {
+      "a" : 1,
+      "answer" : "b",
+      "b" : 2,
+      "c" : 3,
+      "d" : 4,
+      "difficulty" : 1,
+      "marks" : 25,
+      "question" : "which of the following does not make use of magnet work",
+      "theme" : "magnet"
+    },
+    "0010" : {
+      "a" : "All bacteria are harmful",
+      "answer" : "a",
+      "b" : "Yeast can be used to make beer",
+      "c" : "  Yeast and bacteria are micro-organism",
+      "d" : "Bacteria can reproduce by cell division",
+      "difficulty" : 8,
+      "marks" : 25,
+      "question" : "Which of the following statement is false?",
+      "theme" : "magnet"
+    },
+    "0011" : {
+      "a" : "Electromagnet",
+      "answer" : "a",
+      "b" : "Magnetism Rock",
+      "c" : "Lodestone",
+      "d" : "Electricmagnet",
+      "difficulty" : 7,
+      "marks" : 25,
+      "question" : "A magnet is also known as",
+      "theme" : "magnet"
+    },
+    "0012" : {
+      "a" : "A seed is not a living thing and it cannot move",
+      "answer" : "b",
+      "b" : "A seed is a living thing and can grow into seedling",
+      "c" : " A seed died when the fruit is eaten by animals",
+      "d" : "A seed can make its own food",
+      "difficulty" : 4,
+      "marks" : 25,
+      "question" : "based on the chart above, which of the following correctly represents living thing P?",
+      "theme" : "diversity"
+    }
+  },
+  "teacher" : {
+    "T001" : {
+      "name" : "Ken",
+      "sal" : "Mr",
+      "sir" : "Liu"
+    }
+  }
+}

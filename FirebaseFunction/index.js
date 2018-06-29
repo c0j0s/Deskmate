@@ -241,10 +241,11 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         }
         updateQuestionScore(postData,paper.key, checkAnswerContext.preQuestionNumber);
         
+        //update try count to the topic scores
+        updateTopicScore(currentQuestion,checkAnswerContext.questionTryCount)
+        
         if(checkAnswerContext.questionNumber <= Object.keys(paperQuestions).length){
             if(checkAnswerContext.questionAnswerStatus === "correct"){
-                //update try count to the topic scores
-                updateTopicScore(currentQuestion,checkAnswerContext.questionTryCount)
                 
                 //reset the try count when proccedding to the next question
                 checkAnswerContext.questionTryCount = 0;                
