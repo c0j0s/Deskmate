@@ -209,6 +209,18 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                     }
                 };
                 agent.setContext(context)
+                console.log('paperkey: ' + agent.getContext('paper').parameters.key)
+                agent.clearContext('paperstats')
+                const paperStatscontext = {
+                    'name': 'paperstats', 
+                    'lifespan': 30, 
+                    'parameters': {
+                        'paperkey' : agent.getContext('paper').parameters.key,
+                        'startTime': new Date(),
+                        'endTime': ''
+                    }
+                };
+                agent.setContext(paperStatscontext)
                 console.log('currentQuestion: ' + currentQuestion)
                 return agent.add(formQuestion(questionNumber,currentQuestion));
             }
@@ -280,6 +292,10 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 return agent.add(speech + formQuestion(checkAnswerContext.questionNumber,currentQuestion));
             });
         }else{
+            let paperStats = agent.getContext('paperstats').parameters
+            paperStats.endTime = new Date();
+            updateSessionStats(paperStats)
+            agent.clearContext('paperstats')
             updatePaperProperties(paper.key,checkAnswerContext.score,paper.attempts + 1);
             return agent.add("Answer correct! Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore);
         }
@@ -686,6 +702,17 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         console.log('update feedback status: ' + key)
         feedbackDB.child(key).update({
             'read': true
+        })
+    }
+
+    //update homework session stats
+    function updateSessionStats(Stats){
+        Stats.duration = new Date(Stats.endTime) - new Date(Stats.startTime)
+        console.log(Stats)
+        homeworkDB.child(Stats.paperkey).child('sessionStats').update({
+            'startTime':Stats.startTime,
+            'endTime':Stats.endTime,
+            'duration':Stats.duration
         })
     }
 
