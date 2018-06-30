@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
 
         // TODO: Set Sensitivity
         snowboyDetect = new SnowboyDetect(common.getAbsolutePath(), model.getAbsolutePath());
-        snowboyDetect.setSensitivity("0.30");
+        snowboyDetect.setSensitivity("0.6");
         snowboyDetect.applyFrontend(true);
     }
 
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupAsr() {
         // TODO: Setup ASR
         // init speechRecogniser
-        speechRecognizer = speechRecognizer.createSpeechRecognizer(this);
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
 
         // init listener states
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResults(Bundle results) {
                 //Result return as List object
                 List<String> texts = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-
+                Log.e("Results",texts.toString());
                 //Check if result list is empty
                 if (texts == null || texts.isEmpty()){
                     //ask for retry
@@ -400,6 +400,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startAsr() {
+        Log.e("ASR Start","ASR");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -417,7 +418,7 @@ public class MainActivity extends AppCompatActivity {
                 recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en");
                 recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
                 recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
-                recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+                recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
 
                 // Stop hotword detection in case it is still running
                 shouldDetect = false;
@@ -464,7 +465,7 @@ public class MainActivity extends AppCompatActivity {
                     if (speech.equalsIgnoreCase("end_session")) {
                         keepSession = false;
                         startTts("OK, wake me again if you need me.");
-                    } else if (speech.substring(0, 15).equalsIgnoreCase("search_function")) { 
+                    } else if (speech.contains("search_function")) {
                         Log.e("Speech", speech.substring(16));
                         String searchSpeech = getSearch(speech.substring(16));
                         startTts(searchSpeech);
@@ -474,7 +475,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-
         };
 
         asyncTask.execute();
@@ -526,20 +526,29 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Start TTS
         textToSpeech.setPitch(1);
         textToSpeech.setSpeechRate(1);
-        textToSpeech.setLanguage(Locale.ENGLISH);
-        textToSpeech.speak(text, textToSpeech.QUEUE_FLUSH,null);
+
+     //   textToSpeech.setLanguage(Locale.ENGLISH);
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH,null);
         // TODO: Wait for end and start hotword
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
+                Log.e("TTS STATUS", Boolean.toString(textToSpeech.isSpeaking()));
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
                 while (textToSpeech.isSpeaking()) {
                     try {
                         Thread.sleep(100);
+
                     } catch (InterruptedException e) {
                         Log.e("tts", e.getMessage(), e);
                     }
                 }
-                shallContinueConversation();
+                    shallContinueConversation();
             }
         };
         Threadings.runInBackgroundThread(runnable);
@@ -551,6 +560,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void shallContinueConversation(){
         //if keep session, continue asr, else wait 5s and end session, start hotword detection
+        Log.e("Shall Con","Shall CON");
+
         if(keepSession){
             startAsr();
         }else{
