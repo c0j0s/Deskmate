@@ -61,12 +61,23 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     function welcomeUser(agent){
         return new Promise(resolve => {
             userDB.once('value',snapshot=>{
+                messageDB.orderByChild('to').equalTo('0001').once('value', messages =>{
+                    var messageCount = 0;
+                    messages.forEach(item =>{
+                        console.log(item)
+                        if(item.val().read === false){
+                            messageCount++
+                        }
+                    })
+                var id = snapshot.key
+                snapshot = snapshot.val()
+                snapshot.key = id;
+                console.log(messageCount)
+                snapshot.messageCount = messageCount;
                 resolve(snapshot);
+                })
             })
         }).then(snapshot =>{
-            var id = snapshot.key
-            snapshot = snapshot.val()
-            snapshot.key = id;
             console.log('userlogin key:' + snapshot.key)
             const context = {
                 'name': 'user', 
@@ -74,10 +85,17 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 'parameters': snapshot
             };
             agent.setContext(context)
-            return agent.add(`Welcome back ${snapshot.name}. do you want to start your homework now?`)
+            let speech = `Welcome back ${snapshot.name}. `;
+            if(snapshot.messageCount === 0){
+                speech = speech + `you have no new notifications. `
+            }else{
+                speech = speech + `you have ${snapshot.messageCount} new messages. `
+            }
+            speech = speech + `what would you like to do now?`
+            return agent.add(speech)
         }).catch(error => {
             console.log(error)
-            return agent.add(`Welcome back. do you want to start your homework now?`)
+            return agent.add(`Welcome back.`)
         });
     }
 
