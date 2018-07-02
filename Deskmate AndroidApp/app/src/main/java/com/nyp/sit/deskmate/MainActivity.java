@@ -425,7 +425,6 @@ public class MainActivity extends AppCompatActivity {
 
                 // TODO: Start ASR
                 speechRecognizer.startListening(recognizerIntent);
-
             }
         };
 

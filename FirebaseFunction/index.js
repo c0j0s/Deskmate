@@ -13,6 +13,7 @@ const userDB = admin.database().ref('/profile/0001')
 const homeworkDB = admin.database().ref('/profile/0001/homework');
 const questionDB = admin.database().ref('/question');
 const messageDB = admin.database().ref('/messages');
+const feedbackDB = admin.database().ref('/feedback');
 
 const app = dialogflow({debug: false});
 
@@ -43,11 +44,13 @@ const CONFIRM_REPLY = 'Get My Messages - yes - reply - yes';
 const SEND_MESSAGES = 'Send Message';
 const CONFIRM_SEND = 'Send Message - yes';
 
+const GET_FEEDBACK = 'Get Feedback'
+const READ_FEEDBACK_YES = 'Get Feedback - yes'
+
 const {WebhookClient} = require('dialogflow-fulfillment');
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
     const agent = new WebhookClient({ request, response });
     console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
-    let conv = agent.conv();
     
     const param = request.body.result.parameters;
     
@@ -58,12 +61,23 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     function welcomeUser(agent){
         return new Promise(resolve => {
             userDB.once('value',snapshot=>{
+                messageDB.orderByChild('to').equalTo('0001').once('value', messages =>{
+                    var messageCount = 0;
+                    messages.forEach(item =>{
+                        console.log(item)
+                        if(item.val().read === false){
+                            messageCount++
+                        }
+                    })
+                var id = snapshot.key
+                snapshot = snapshot.val()
+                snapshot.key = id;
+                console.log(messageCount)
+                snapshot.messageCount = messageCount;
                 resolve(snapshot);
+                })
             })
         }).then(snapshot =>{
-            var id = snapshot.key
-            snapshot = snapshot.val()
-            snapshot.key = id;
             console.log('userlogin key:' + snapshot.key)
             const context = {
                 'name': 'user', 
@@ -71,10 +85,17 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 'parameters': snapshot
             };
             agent.setContext(context)
-            return agent.add(`Welcome back ${snapshot.name}. do you want to start your homework now?`)
+            let speech = `Welcome back ${snapshot.name}. `;
+            if(snapshot.messageCount === 0){
+                speech = speech + `you have no new notifications. `
+            }else{
+                speech = speech + `you have ${snapshot.messageCount} new messages. `
+            }
+            speech = speech + `what would you like to do now?`
+            return agent.add(speech)
         }).catch(error => {
             console.log(error)
-            return agent.add(`Welcome back. do you want to start your homework now?`)
+            return agent.add(`Welcome back.`)
         });
     }
 
@@ -188,6 +209,18 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                     }
                 };
                 agent.setContext(context)
+                console.log('paperkey: ' + agent.getContext('paper').parameters.key)
+                agent.clearContext('paperstats')
+                const paperStatscontext = {
+                    'name': 'paperstats', 
+                    'lifespan': 30, 
+                    'parameters': {
+                        'paperkey' : agent.getContext('paper').parameters.key,
+                        'startTime': new Date(),
+                        'endTime': ''
+                    }
+                };
+                agent.setContext(paperStatscontext)
                 console.log('currentQuestion: ' + currentQuestion)
                 return agent.add(formQuestion(questionNumber,currentQuestion));
             }
@@ -215,10 +248,13 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             //update total score if only question correct for first try
             if(checkAnswerContext.questionTryCount === 0){
                 checkAnswerContext.score = checkAnswerContext.score + currentQuestion.marks;
+                //update try count to the topic scores
+                updateTopicScore(currentQuestion)
             }
             
             //update question number to proceed to next question
             checkAnswerContext.questionNumber++;
+
         }else{
             speech = `Answer incorrect! try again? `;
             checkAnswerContext.questionAnswerStatus  = "wrong";
@@ -239,7 +275,9 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         
         if(checkAnswerContext.questionNumber <= Object.keys(paperQuestions).length){
             if(checkAnswerContext.questionAnswerStatus === "correct"){
-                checkAnswerContext.questionTryCount = 0;
+                
+                //reset the try count when proccedding to the next question
+                checkAnswerContext.questionTryCount = 0;                
             }
             agent.clearContext('checkanswercontext')
             const context = {
@@ -253,6 +291,10 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 return agent.add(speech + formQuestion(checkAnswerContext.questionNumber,currentQuestion));
             });
         }else{
+            let paperStats = agent.getContext('paperstats').parameters
+            paperStats.endTime = new Date();
+            updateSessionStats(paperStats)
+            agent.clearContext('paperstats')
             updatePaperProperties(paper.key,checkAnswerContext.score,paper.attempts + 1);
             return agent.add("Answer correct! Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore);
         }
@@ -439,6 +481,52 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         return agent.add('Ok, message sent.')
     }
 
+    function getFeedback(agent){
+        agent.clearContext('paper')
+        agent.clearContext('sendmessage-followup')
+        agent.clearContext('getmymessages-yes-followup')
+
+        const user = agent.getContext('user').parameters;
+        return getUserFeedback(user.key).then(feedbackList => {
+            var speech
+            if(feedbackList.length !== 0){
+                speech = `you have ${ feedbackList.length } feedback from you teachers, do you want me to read it out for you?`
+            }else{
+                speech = `you have no new feedback`
+            }
+
+            agent.clearContext('getfeedback-followup')
+            const context = {
+                'name':'getfeedback-followup',
+                'lifespan':feedbackList.length,
+                'parameters': {
+                    'list': feedbackList
+                }
+            }
+            console.log("length: " + feedbackList.length)
+            agent.setContext(context)
+            return agent.add(speech)
+        }).catch(error=>{
+            console.log(error)
+            return agent.add('please try again')
+        })
+    }
+
+    function readFeedback(agent){
+        //to handle the feedback selection [not implemented]
+        let feedbackNumber = param.feedbackNumber;
+        agent.clearContext('paper')
+        agent.clearContext('sendmessage-followup')
+        agent.clearContext('getmymessages-yes-followup')
+
+        let feedbackList = agent.getContext('getfeedback-followup').parameters.list
+        console.log(feedbackList)
+        agent.clearContext('getfeedback-followup')
+        //retrieve and read all the feedbacks
+        updateFeedbackReadStatus(feedbackList[0].key)
+        return agent.add(`Feedback 1 from ${feedbackList[0].teacherName}: he said ${feedbackList[0].feedback}`)
+    }
+
     function defaultFallback(agent){
         agent.add('fall back: intent not implemented')
     }
@@ -510,6 +598,32 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         hwref.update(postData);
     }
 
+    //for updating the topic scores
+    function updateTopicScore(currentQuestion){
+        var user = agent.getContext('user').parameters;
+        var topic = currentQuestion.topic;
+        var newScore;
+        if(typeof(user.topicScore[topic]) === 'undefined'){
+            newScore =  1;
+        }else{
+            newScore = user.topicScore[topic] + 1;
+        }
+        user.topicScore[topic] = newScore;
+        //update context value to match database
+        const context = {
+            'name': 'user', 
+            'lifespan': 30, 
+            'parameters': user,
+        };
+        agent.setContext(context);
+        
+        console.log('new topic score: '+ newScore)
+        //post to database
+        userDB.child('topicScore').update({
+            [topic]:newScore
+        })
+    }
+
     //for updating the status of paper
     function updatePaperProperties(paperkey,score,paperAttempts){
         homeworkDB.child(paperkey).update({
@@ -561,6 +675,40 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             })
     })
 
+    const getUserFeedback = (userkey) => new Promise(resolve=>{
+        feedbackDB.orderByChild('sId').equalTo(userkey).once('value', allFeedback=>{
+            var feedbackList = [];
+            allFeedback.forEach(feedback => {
+                if(feedback.val().read === false){
+                    let item = feedback.val()
+                    item.key = feedback.key
+                    feedbackList.push(item)
+                }
+            })
+            console.log(feedbackList)
+            resolve(feedbackList)
+        })
+    })
+
+    //update feedback status
+    function updateFeedbackReadStatus(key){
+        console.log('update feedback status: ' + key)
+        feedbackDB.child(key).update({
+            'read': true
+        })
+    }
+
+    //update homework session stats
+    function updateSessionStats(Stats){
+        Stats.duration = new Date(Stats.endTime) - new Date(Stats.startTime)
+        console.log(Stats)
+        homeworkDB.child(Stats.paperkey).child('sessionStats').update({
+            'startTime':Stats.startTime,
+            'endTime':Stats.endTime,
+            'duration':Stats.duration
+        })
+    }
+
     //[DEPRECIATED] for clearing the salutation in sendors name
     function clearSal(rawText){
         var sals = ['mr', 'ms', 'mrs', 'mdm', 'dr'];
@@ -604,6 +752,9 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
     intentMap.set(SEND_MESSAGES, sendMessage);
     intentMap.set(CONFIRM_SEND, confirmSendMessage);
+
+    intentMap.set(GET_FEEDBACK,getFeedback)
+    intentMap.set(READ_FEEDBACK_YES,readFeedback)
 
     agent.handleRequest(intentMap);
 });
