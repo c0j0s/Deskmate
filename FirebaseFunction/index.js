@@ -288,7 +288,11 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             agent.setContext(context)
             return getFBQuestions(agent,checkAnswerContext.questionNumber)
             .then(currentQuestion => {
-                return agent.add(speech + formQuestion(checkAnswerContext.questionNumber,currentQuestion));
+                //read next question if answer correct
+                if(checkAnswerContext.questionTryCount === 0){
+                    speech = speech + formQuestion(checkAnswerContext.questionNumber,currentQuestion);
+                }
+                return agent.add(speech);
             });
         }else{
             let paperStats = agent.getContext('paperstats').parameters
