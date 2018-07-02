@@ -248,6 +248,8 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             //update total score if only question correct for first try
             if(checkAnswerContext.questionTryCount === 0){
                 checkAnswerContext.score = checkAnswerContext.score + currentQuestion.marks;
+                //update try count to the topic scores
+                updateTopicScore(currentQuestion)
             }
             
             //update question number to proceed to next question
@@ -270,9 +272,6 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             tryCount: checkAnswerContext.questionTryCount
         }
         updateQuestionScore(postData,paper.key, checkAnswerContext.preQuestionNumber);
-        
-        //update try count to the topic scores
-        updateTopicScore(currentQuestion,checkAnswerContext.questionTryCount)
         
         if(checkAnswerContext.questionNumber <= Object.keys(paperQuestions).length){
             if(checkAnswerContext.questionAnswerStatus === "correct"){
@@ -600,22 +599,16 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     }
 
     //for updating the topic scores
-    function updateTopicScore(currentQuestion, tryCount){
+    function updateTopicScore(currentQuestion){
         var user = agent.getContext('user').parameters;
         var topic = currentQuestion.topic;
         var newScore;
-        console.log(user.topicScore)
-        console.log('topics: ' + topic)
-        console.log('user.topicScore[topic]: ' + user.topicScore[topic])
         if(typeof(user.topicScore[topic]) === 'undefined'){
-            newScore =  tryCount;
+            newScore =  1;
         }else{
-            console.log("prev score: " + user.topicScore[topic])
-            console.log("try count: " + tryCount)
-            newScore = user.topicScore[topic] + tryCount;
+            newScore = user.topicScore[topic] + 1;
         }
         user.topicScore[topic] = newScore;
-        console.log('new user.topicScore[topic]: ' + user.topicScore[topic])
         //update context value to match database
         const context = {
             'name': 'user', 
