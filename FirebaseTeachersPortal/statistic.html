@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to Teachers portal</title>
+	<link rel="stylesheet" type = "text/css" href="css/bootstrap-grid.css">
+	<link rel="stylesheet" type = "text/css" href="css/bootstrap-reboot.css">
+	<link rel="stylesheet" type = "text/css" href="css/bootstrap.css">
+	<link rel="stylesheet" type = "text/css" href="css/styling.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+	<script src="js/jquery.js"></script>
+	<script src="js/bootstrap.js"></script>
+	
+
+	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+
+
+  </head>
+  <body>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<div class="container">
+		<a class="navbar-brand" href="https://deskmate2018.firebaseapp.com/">
+				<img src="https://firebasestorage.googleapis.com/v0/b/deskmate2018.appspot.com/o/ic_launcher.png?alt=media&token=fa090ccd-e14e-4099-b3b7-cf874a035ad6"/>
+			Deskmate
+		</a>
+		<div class="" id="navbarNav collapse navbar-collapse">
+		<ul class="navbar-nav mr-auto">
+				<li class="nav-item">
+						<a class="nav-link active" href="index.html">
+							Home
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="message.html">
+							Messages
+						</a>
+					</li>
+		</ul>
+		</div>
+</div>
+	</nav>
+	<div class="content">
+		
+	</div>
+	<div class="container">
+  <!-- Modal -->
+  <div class="card-deck child">
+	  <div class="card bg-light mb-3 one">
+		<canvas id="myChart" style="max-width: 1000px;"></canvas>
+	  </div> 
+	  <div class="card bg-light mb-3 one">
+		<canvas id="myChart2" style="max-width: 1000px;"></canvas>
+	  </div>
+  </div>
+  </div>
+  
+</div>
+	</div>
+
+	<footer class="container-fluid bg-light mt-5">
+		<div class="container text-center p-3">
+				@Copyright Deskmate 2018 
+		</div>
+	</footer>
+   <script>
+   function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+	};
+	var topic = [];
+	var score = [];
+	var id = getUrlParameter('userid');
+	console.log(id);
+	var config = {
+			apiKey: "AIzaSyB29exuhOXpePNSnW4UaGd8dhSppgYbYTo",
+			authDomain: "deskmate2018.firebaseapp.com",
+			databaseURL: "https://deskmate2018.firebaseio.com",
+			projectId: "deskmate2018",
+			storageBucket: "deskmate2018.appspot.com",
+			messagingSenderId: "876434687063"
+		};
+			firebase.initializeApp(config);
+	var topicscore = firebase.database().ref('profile/'+id+'/topicScore');
+	topicscore.once('value', getData)
+	function getData(data){
+		data.forEach(function(scoreSnapShot){
+		topic.push(scoreSnapShot.key);
+			console.log(topic);
+		score.push(scoreSnapShot.val())
+			console.log(score);
+		})
+		graph1();
+		graph2();
+	}
+	function graph1(){
+	var ctx = document.getElementById("myChart").getContext('2d');
+		var myChart = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: [topic[0], topic[1], topic[2], topic[3], topic[4] ],
+				datasets: [{
+					label: 'topic score',
+					data: [score[0], score[1], score[2], score[3], score[4]],
+					backgroundColor: [
+						'rgba(255, 99, 132, 0.2)',
+						'rgba(54, 162, 235, 0.2)',
+						'rgba(255, 206, 86, 0.2)',
+						'rgba(75, 192, 192, 0.2)',
+						'rgba(153, 102, 255, 0.2)',
+						'rgba(255, 159, 64, 0.2)'
+					],
+					borderColor: [
+						'rgba(255,99,132,1)',
+						'rgba(54, 162, 235, 1)',
+						'rgba(255, 206, 86, 1)',
+						'rgba(75, 192, 192, 1)',
+						'rgba(153, 102, 255, 1)',
+						'rgba(255, 159, 64, 1)'
+					],
+					borderWidth: 1
+				}]
+			},
+			options: {
+				scales: {
+					yAxes: [{
+						ticks: {
+							beginAtZero:true
+						}
+					}]
+				}
+			}
+		});
+	}
+	function graph2(){
+		var ctx2 = document.getElementById("myChart2").getContext('2d');
+		var myChart2 = new Chart(ctx2, {
+			type: 'radar',
+    data: {
+        labels: [topic[0], topic[1], topic[2], topic[3], topic[4]],
+        datasets: [
+            {
+                label: "test",
+                fillColor: "rgba(220,220,220,0.2)",
+                strokeColor: "rgba(220,220,220,1)",
+                pointColor: "rgba(220,220,220,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(220,220,220,1)",
+                data: [score[0], score[1], score[2], score[3], score[4]]
+            }
+        ]
+    },
+			options: {
+				scales: {
+					beginAtZero:true,
+					responsive: true
+				}
+			}
+		});	
+	}
+</script>
+  </body>
+</html>

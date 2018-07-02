@@ -65,3 +65,10 @@ ul{
 	margin-left:10px;
 	font-size: 20px;
 }
+a{
+	color: black;
+}
+a:link, a:hover{
+	text-decoration: none;
+	color: black;
+}
