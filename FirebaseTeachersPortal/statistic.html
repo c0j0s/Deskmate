@@ -12,11 +12,10 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
 	<script src="js/jquery.js"></script>
 	<script src="js/bootstrap.js"></script>
-	
-
-	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+	<script src="js/master.js"></script>
 
 
   </head>
@@ -77,15 +76,6 @@
 	var score = [];
 	var id = getUrlParameter('userid');
 	console.log(id);
-	var config = {
-			apiKey: "AIzaSyB29exuhOXpePNSnW4UaGd8dhSppgYbYTo",
-			authDomain: "deskmate2018.firebaseapp.com",
-			databaseURL: "https://deskmate2018.firebaseio.com",
-			projectId: "deskmate2018",
-			storageBucket: "deskmate2018.appspot.com",
-			messagingSenderId: "876434687063"
-		};
-			firebase.initializeApp(config);
 	var topicscore = firebase.database().ref('profile/'+id+'/topicScore');
 	topicscore.once('value', getData)
 	function getData(data){
