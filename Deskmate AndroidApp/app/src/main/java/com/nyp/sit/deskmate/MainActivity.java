@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean asrStart = false;
     private boolean keepSession = false;
     private SnowboyDetect snowboyDetect;
-
+    private CloudSpeechRecognizer cloudSpeechRecognizer;
 
     static {
         //Run only on amd device, Not Intel based Emulator
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         setupViews();
         setupXiaoBaiButton();
         setupTts();
-        setupAsr();
+        setupCloudAsr();
         setupNlu();
         setupHotword();
         // TODO: Start Hotword
@@ -130,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!asrStart) {
                     toggleButton(true);
-                    startAsr();
+                    startCloudAsr();
                 }else{
                     toggleButton(false);
                     try {
@@ -203,6 +204,16 @@ public class MainActivity extends AppCompatActivity {
         snowboyDetect = new SnowboyDetect(common.getAbsolutePath(), model.getAbsolutePath());
         snowboyDetect.setSensitivity("0.6");
         snowboyDetect.applyFrontend(true);
+    }
+
+    private void setupCloudAsr() {
+        InputStream authorizationInputStream = getResources().openRawResource(R.raw.auth);
+        try {
+            cloudSpeechRecognizer = new CloudSpeechRecognizer(this, authorizationInputStream);
+        } catch (IOException e) {
+            Log.e("cloudasr", e.getMessage(), e);
+            startHotword();
+        }
     }
 
     // hotword trigger asr
@@ -389,11 +400,29 @@ public class MainActivity extends AppCompatActivity {
                 if (!asrStart) {
                     keepSession = false;
                     textToSpeech.stop();
-                    startAsr();
+                    startCloudAsr();
                 }
             }
         };
         Threadings.runInBackgroundThread(runnable);
+    }
+
+    private void startCloudAsr() {
+        cloudSpeechRecognizer.startListening(this, "en-US",
+                new CloudSpeechRecognizer.OnAsrResultListener() {
+                    @Override
+                    public void onResult(String text, float confidence) {
+                        // This will run on Main/UI Thread
+                        textView.setText(text);
+                        startNlu(text);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e("cloudasr", e.getMessage(), e);
+                        startHotword();
+                    }
+                });
     }
 
     private void startAsr() {
@@ -559,7 +588,7 @@ public class MainActivity extends AppCompatActivity {
         Log.e("keepSession",Boolean.toString(keepSession));
 
         if(keepSession){
-            startAsr();
+            startCloudAsr();
         }
 //        else{
 //            //ending session
