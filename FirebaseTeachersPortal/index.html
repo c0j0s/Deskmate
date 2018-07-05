@@ -52,11 +52,12 @@
 					<!-- Modal content-->
 					<div class="modal-content">
 						<div class="modal-header">
-							<h4 class="modal-title">Modal Header</h4>
+							<h4 class="modal-title">Enter New Homework Name</h4>
 							<button type="button" class="close" data-dismiss="modal">&times;</button>
 						</div>
 						<div class="modal-body">
 							Paper Name:<input class="form-control input-sm" type="text" name="papername" id = "pName"></input>
+							<!-- Number of questions:<input class="form-control input-sm" type="number" name="NoOfQuestion" id = "pNoOfQuestion"></input> -->
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-default" data-dismiss="modal" onclick="writetoDB()">Submit</button>
@@ -98,7 +99,6 @@
 						if(a.length < qnsid.length){
 							if(qnsid.indexOf(qesid) === -1){
 								a.push(quesSnapshot.key);
-								console.log(a);
 							}
 						}
 					}
@@ -108,14 +108,11 @@
 			return ids = $(id).data("user");
 		}
 		function writetoDB(){
-			console.log(ids);
 			papername = document.getElementById('pName').value;
-			console.log(papername);
 			for (var c = 0; c < 5; c++){
 				randomvalue = a[Math.floor(Math.random() * a.length)];
 				index = a.indexOf(randomvalue);
 				ranques.push(randomvalue);
-				console.log(ranques);
 				a.splice(index,1);
 			}
 			firebase.database().ref('profile/'+ids+'/homework').push({
@@ -194,13 +191,11 @@
 									$("#"+userkey).on('click',function() {
 										if(curruser == $(this).data("user")){
 											qnsid.push(qesid);
-											console.log(qnsid);
 										}
 										else{
 											qnsid = [];
 											curruser = $(this).data("user");
 											qnsid.push(qesid);
-											console.log(qnsid);
 										}
 									})
 									qindex--;
