@@ -21,16 +21,12 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.gson.JsonElement;
-
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -69,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean asrStart = false;
     private boolean keepSession = false;
     private SnowboyDetect snowboyDetect;
-
+    private CloudSpeechRecognizer cloudSpeechRecognizer;
 
     static {
         //Run only on amd device, Not Intel based Emulator
@@ -89,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         setupViews();
         setupXiaoBaiButton();
         setupTts();
-        setupAsr();
+        setupCloudAsr();
         setupNlu();
         setupHotword();
         // TODO: Start Hotword
@@ -135,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!asrStart) {
                     toggleButton(true);
-                    startAsr();
+                    startCloudAsr();
                 }else{
                     toggleButton(false);
                     try {
@@ -208,6 +204,16 @@ public class MainActivity extends AppCompatActivity {
         snowboyDetect = new SnowboyDetect(common.getAbsolutePath(), model.getAbsolutePath());
         snowboyDetect.setSensitivity("0.6");
         snowboyDetect.applyFrontend(true);
+    }
+
+    private void setupCloudAsr() {
+        InputStream authorizationInputStream = getResources().openRawResource(R.raw.auth);
+        try {
+            cloudSpeechRecognizer = new CloudSpeechRecognizer(this, authorizationInputStream);
+        } catch (IOException e) {
+            Log.e("cloudasr", e.getMessage(), e);
+            startHotword();
+        }
     }
 
     // hotword trigger asr
@@ -349,7 +355,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Runnable runnable = new Runnable() {
+        final Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 shouldDetect = true;
@@ -392,15 +398,35 @@ public class MainActivity extends AppCompatActivity {
 
                 // TODO: Add action after hotword is detected
                 if (!asrStart) {
-                    startAsr();
+                    keepSession = false;
+                    textToSpeech.stop();
+                    startCloudAsr();
                 }
             }
         };
         Threadings.runInBackgroundThread(runnable);
     }
 
+    private void startCloudAsr() {
+        cloudSpeechRecognizer.startListening(this, "en-US",
+                new CloudSpeechRecognizer.OnAsrResultListener() {
+                    @Override
+                    public void onResult(String text, float confidence) {
+                        // This will run on Main/UI Thread
+                        textView.setText(text);
+                        startNlu(text);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e("cloudasr", e.getMessage(), e);
+                        startHotword();
+                    }
+                });
+    }
+
     private void startAsr() {
-        Log.e("ASR Start","ASR");
+        Log.e("startAsr","Running");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -513,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startTts(String text) {
-        final com.nyp.sit.deskmate.Message message = new com.nyp.sit.deskmate.Message(text,0);
+        final com.nyp.sit.deskmate.Message message = new com.nyp.sit.deskmate.Message(text, 0);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -525,48 +551,49 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Start TTS
         textToSpeech.setPitch(1);
         textToSpeech.setSpeechRate(1);
+        startHotword();
 
-     //   textToSpeech.setLanguage(Locale.ENGLISH);
-        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH,null);
+        //   textToSpeech.setLanguage(Locale.ENGLISH);
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
         // TODO: Wait for end and start hotword
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 Log.e("TTS STATUS", Boolean.toString(textToSpeech.isSpeaking()));
-                try {
-                    Thread.sleep(300);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    Thread.sleep(300);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
 
                 while (textToSpeech.isSpeaking()) {
                     try {
                         Thread.sleep(100);
-
                     } catch (InterruptedException e) {
                         Log.e("tts", e.getMessage(), e);
                     }
                 }
-                    shallContinueConversation();
+                shallContinueConversation();
             }
         };
         Threadings.runInBackgroundThread(runnable);
     }
-
     /*==============================================================================================
         Other Methods
      */
 
     private void shallContinueConversation(){
         //if keep session, continue asr, else wait 5s and end session, start hotword detection
-        Log.e("Shall Con","Shall CON");
+        Log.e("Shall Cont Conv","Running");
+        Log.e("keepSession",Boolean.toString(keepSession));
 
         if(keepSession){
-            startAsr();
-        }else{
-            //ending session
-            startHotword();
+            startCloudAsr();
         }
+//        else{
+//            //ending session
+//            startHotword();
+//        }
     }
 
     private String getSearch(String userInput) {    //Added this for search
@@ -596,11 +623,12 @@ public class MainActivity extends AppCompatActivity {
                                 .replaceAll("<ol>", "").replaceAll("</ol>", "")
                                 .replaceAll("<ul>", "").replaceAll("</ul>", "")
                                 .replaceAll("<a>", "").replaceAll("</a>", "")
+                                .replaceAll("<em>", "").replaceAll("</em>", "")
                                 .replaceAll("-&gt;", " ").replaceAll("&nbsp;", "")
                                 .replaceAll( "\\+\\+\\+", "").replaceAll("\\s+", " ");
 
                     }catch(Exception e) {
-                        result = "Unable to search. Please rephrase your question. For example: What is, Where does, Which is.";
+                        result = "Unable to search. Please rephrase your question. For example: What is a butterfly, Where is Singapore";
                     }
         
                     return  result;
@@ -608,44 +636,6 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-        
-        //       WIKI Version
-        
-        //        HttpURLConnection httpcon;
-        //        try {
-        //            httpcon = (HttpURLConnection) new URL(URL).openConnection();
-        //            httpcon.addRequestProperty("User-Agent", "Mozilla/5.0");
-        //
-        //            BufferedReader in = new BufferedReader(new InputStreamReader(httpcon.getInputStream()));
-        //
-        //            String responseSB;
-        //            String result;
-        //            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-        //                responseSB = in.lines().collect(Collectors.joining());
-        //                in.close();
-        //
-        //                try {
-        //                    result = "Search found! " + responseSB.split("extract\":\"")[1];
-        //
-        //                } catch (Exception e) {
-        //                    Log.e("Error", e.toString());
-        //                    result = "Unable to search. Please rephrase your question.";
-        //                }
-        //
-        //                Log.e("Result: ", result);
-        //
-        //            } else {
-        //                result = "Unable to search. Please use android version 7.0(Nougat) and up.";
-        //            }
-        //
-        //            String textToTell = result.length() > 270 ? result.substring(0, 270) : result;
-        //            Log.e("Reply Speech", textToTell);
-        //
-        //            return textToTell;
-        //
-        //        } catch (IOException e) {
-        //            e.printStackTrace();
-        //        }
                 return "No search found!";
         }
 
