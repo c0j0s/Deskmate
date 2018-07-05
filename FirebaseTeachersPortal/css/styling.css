@@ -72,3 +72,6 @@ a:link, a:hover{
 	text-decoration: none;
 	color: black;
 }
+.noBorder{
+	border:none;
+}
