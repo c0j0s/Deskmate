@@ -53,7 +53,6 @@ const {WebhookClient} = require('dialogflow-fulfillment');
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
     const agent = new WebhookClient({ request, response });
     console.log('DialogflowBody: ' + JSON.stringify(request.body));
-    console.log('DialogflowContext: ' + JSON.stringify(request.body.context));
     const param = request.body.result.parameters;
     
     //============================================================================================================================================
@@ -259,6 +258,12 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         var paper = agent.getContext('paper').parameters;
         var paperQuestions = paper.questions;
         var answer = param.inputAnswer;
+        var selection = ['A','B','C','D']
+        console.log(answer)
+        console.log(selection.includes(answer))
+        if(!selection.includes(answer)){
+            return agent.add(`Sorry, i didn't get your answer, please try again.`)
+        }
         var currentQuestion = agent.getContext('currentquestion').parameters;
         var checkAnswerContext = agent.getContext('checkanswercontext').parameters;
         var speech, postData;
@@ -334,10 +339,17 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         }
     }
 
+    //Not implemented
     function checkStudentAnswerNext(agent){
         var paper = agent.getContext('paper').parameters;
         var paperQuestions = paper.questions;
         var answer = param.inputAnswer;
+        var selection = ['A','B','C','D']
+        console.log(answer)
+        console.log(selection.includes(answer))
+        if(!selection.includes(answer)){
+            return agent.add(`Sorry, i didn't get your answer, please try again.`)
+        }
         var checkAnswerContext = agent.getContext('checkanswercontext').parameters;
         var speech;
         var change = true;
