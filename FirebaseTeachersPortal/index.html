@@ -160,7 +160,7 @@
 		function getData(data){
 			data.forEach(function(childSnapshot){
 				var userkey = childSnapshot.key;
-				console.log(userkey);
+				//console.log(userkey);
 				var studyarea1;
 				var studyarea2;
 				//console.log(childSnapshot);
@@ -179,10 +179,10 @@
 				$('<div class= "card bg-light mb-3"><div id="heading2" class="card-header"><b>Name: '+childSnapshot.val().name+'</b><button class="btn call" data-user="'+userkey+'" id ="'+userkey+'" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" onclick="randomques(this)">Generate New Homework for '+ childSnapshot.val().name+'</button><button class="btn call mr-2"><a href="statistic.html?userid='+userkey+'&myName='+childSnapshot.val().name+'">Student Statistic</a></button><div><span class=" badge badge-info" style="font-size: 20px;">Primary '+childSnapshot.val().stage+'</span><span class="pad badge badge-info">Age: '+childSnapshot.val().age+'</span><span class="pad badge badge-info">Study area: '+studyarea1 + studyarea2+'</span></div></div><div class="card-body scrollmenu"><div class="card-deck child inline" id="details'+userkey+'"></div></div></div><p></p>').appendTo("#data");
 				childSnapshot.child("homework").forEach(function(hwsnapshot){
 					var Uid = userkey.toString();
-					console.log(Uid)
+					//console.log(Uid)
 					var hwid = hwsnapshot.key.toString();
-					console.log(hwid)
-					console.log(Uid+hwid)
+					//console.log(hwid)
+					//console.log(Uid+hwid)
 					var qindex = hwsnapshot.child('questions').val().length;
 					if(hwsnapshot.val().attempts > 0){
 						$('<div class="card mb-3 one bg-secondary"><div class="heading4 bg-success text-white card-header">'+hwsnapshot.val().name+'<div class="score">'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</div></div><div class="list-group" id="'+Uid+hwid+'">  </div><p class="bg-secondary text-white p-2 pl-3">Completed on: '+ formatDate(hwsnapshot.val().datetimeCompleted) + '</p></div></div>').prependTo('#details'+userkey);
@@ -197,11 +197,11 @@
 							question.forEach(function(quesSnapshot){
 								var qesid = quesSnapshot.key;
 								if( qesid === qnssnapshot.val().id){
-									$('<p class="heading3 card-text">'+ (qindex) + ") " + quesSnapshot.val().question+'</p><p>['+ quesSnapshot.val().topic +']</p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
+									$('<p class="heading3 card-text" data-topic="'+ quesSnapshot.val().topic +'">'+ (qindex) + ") " + quesSnapshot.val().question+'</p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
 									$("#"+userkey).on('click',function() {
 										if(curruser == $(this).data("user")){
 											qnsid.push(qesid);
-											console.log(qnsid);
+											//console.log(qnsid);
 										}
 										else{
 											qnsid = [];
