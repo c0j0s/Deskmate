@@ -52,8 +52,8 @@ const END_SESSION = 'End Session'
 const {WebhookClient} = require('dialogflow-fulfillment');
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
     const agent = new WebhookClient({ request, response });
-    console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
-    
+    console.log('DialogflowBody: ' + JSON.stringify(request.body));
+    console.log('DialogflowContext: ' + JSON.stringify(request.body.context));
     const param = request.body.result.parameters;
     
     //============================================================================================================================================
@@ -330,7 +330,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             agent.clearContext('paperstats')
             console.log('paper score:' + checkAnswerContext.score)
             updatePaperProperties(paper.key,checkAnswerContext.score,paper.attempts + 1);
-            return agent.add("Answer correct! Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore);
+            return agent.add("Answer correct! Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore + ' What would you like to do next?');
         }
     }
 
@@ -520,7 +520,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         delete data['sendTo']
         console.log(data)
         messageDB.push(data)
-        return agent.add('Ok, message sent. what would you like to do now?')
+        return agent.add('Ok, message sent. what would you like to do next?')
     }
 
     function getFeedback(agent){
