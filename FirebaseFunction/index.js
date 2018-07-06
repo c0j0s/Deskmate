@@ -71,11 +71,21 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                             messageCount++
                         }
                     })
+                var hwCount = 0
+                var vals = Object.keys(snapshot.child('homework').val()).map(key=> {
+                    return snapshot.child('homework').val()[key];
+                });
+                vals.forEach(element => {
+                    if(element.attempts ===0){
+                        hwCount++
+                    }
+                });
                 var id = snapshot.key
                 snapshot = snapshot.val()
                 snapshot.key = id;
                 console.log(messageCount)
                 snapshot.messageCount = messageCount;
+                snapshot.hwCount = hwCount;
                 resolve(snapshot);
                 })
             })
@@ -88,10 +98,20 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             };
             agent.setContext(context)
             let speech = `Welcome back ${snapshot.name}. `;
-            if(snapshot.messageCount === 0){
+            if(snapshot.messageCount === 0 && snapshot.hwCount === 0){
                 speech = speech + `you have no new notifications. `
             }else{
-                speech = speech + `you have ${snapshot.messageCount} new messages. `
+                speech = speech + `you have `
+                if(snapshot.hwCount !== 0){
+                    speech = speech + `${snapshot.hwCount} new homework `
+                }
+                if(snapshot.hwCount !== 0 && snapshot.messageCount !== 0){
+                    speech = speech + 'and '
+                }
+                if(snapshot.messageCount !== 0){
+                    speech = speech + `${snapshot.messageCount} new message `
+                }
+                speech = speech + `. `
             }
             speech = speech + `what would you like to do now?`
             return agent.add(speech)
