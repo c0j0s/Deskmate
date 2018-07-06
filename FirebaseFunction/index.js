@@ -47,6 +47,8 @@ const CONFIRM_SEND = 'Send Message - yes';
 const GET_FEEDBACK = 'Get Feedback'
 const READ_FEEDBACK_YES = 'Get Feedback - yes'
 
+const END_SESSION = 'End Session'
+
 const {WebhookClient} = require('dialogflow-fulfillment');
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
     const agent = new WebhookClient({ request, response });
@@ -186,6 +188,8 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
     function beginQuestion(agent) {
         var questionNumber = param.questionNumber;
+        param.questionNumber = ""
+        console.log('parampaperNo: ' + param.questionNumber)
         var paperName = param.paperName;
         if(questionNumber === ""){
             questionNumber = 1;
@@ -546,6 +550,19 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         return agent.add(`Feedback 1 from ${feedbackList[0].teacherName}: he said ${feedbackList[0].feedback}`)
     }
 
+    function endSession(agent){
+        agent.clearContext('paper')
+        agent.clearContext('sendmessage-followup')
+        agent.clearContext('getmymessages-yes-followup')
+        agent.clearContext("checkanswercontext")
+        agent.clearContext("currentquestion")
+        agent.clearContext("paperstats")
+        agent.clearContext("doingquestion")
+        agent.clearContext("checkstudentanswer-followup")
+        console.log('Session Ended: context cleared')
+        return agent.add('end_session')
+    }
+
     function defaultFallback(agent){
         agent.add('fall back: intent not implemented')
     }
@@ -555,6 +572,12 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     
     //retrieving paper details from firebase
     const getPaper = (agent, paperName) => new Promise(resolve => {
+        agent.clearContext("checkanswercontext")
+        agent.clearContext("paper")
+        agent.clearContext("currentquestion")
+        agent.clearContext("paperstats")
+        agent.clearContext("doingquestion")
+        agent.clearContext("checkstudentanswer-followup")
         var paperparam = false;
         homeworkDB.once('value',snapshot=>{
             snapshot.forEach(snap => {
@@ -777,6 +800,8 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
     intentMap.set(GET_FEEDBACK,getFeedback)
     intentMap.set(READ_FEEDBACK_YES,readFeedback)
+
+    intentMap.set(END_SESSION,endSession)
 
     agent.handleRequest(intentMap);
 });
