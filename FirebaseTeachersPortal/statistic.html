@@ -143,7 +143,7 @@
 				labels: Object.keys(totalTopicscore),
 				datasets: [{
 					label: 'Individual score',
-					data: [score[0], score[1], score[2], score[3], score[4], score[5],score[6]],
+					data: score,
 					backgroundColor: [
 						'rgba(255, 99, 132, 0.2)',
 						'rgba(255, 99, 132, 0.2)',
@@ -205,11 +205,11 @@
 	}
 	function graph2(){
 	var data = {
-		labels: [topic[0], topic[1], topic[2], topic[3], topic[4], topic[5], topic[6]],
+		labels: topic,
 				datasets: [
 					{
 						label: "Individual progress",
-						data: [score[0], score[1], score[2], score[3], score[4], score[5], score[6]],
+						data: score,
 						backgroundColor: 'rgba(102, 153, 255,0.2)',
 						borderColor: 'rgba(102, 153, 255,1)'
 					}
