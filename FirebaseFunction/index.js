@@ -247,6 +247,9 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             
             //update total score if only question correct for first try
             if(checkAnswerContext.questionTryCount === 0){
+                if(currentQuestion.marks===undefined){
+                    currentQuestion.marks = 20
+                }
                 checkAnswerContext.score = checkAnswerContext.score + currentQuestion.marks;
                 //update try count to the topic scores
                 updateTopicScore(currentQuestion)
@@ -299,6 +302,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             paperStats.endTime = new Date();
             updateSessionStats(paperStats)
             agent.clearContext('paperstats')
+            console.log('paper score:' + checkAnswerContext.score)
             updatePaperProperties(paper.key,checkAnswerContext.score,paper.attempts + 1);
             return agent.add("Answer correct! Reach the end of paper, you have score " + checkAnswerContext.score + " marks out of " +paper.totalScore);
         }
@@ -409,7 +413,12 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
     function replyMessage(agent){
         agent.clearContext('paper');
+        if(agent.getContext('user') === null){
+            return agent.add('User Session Ended')
+        }
         var user = agent.getContext('user').parameters;
+        
+
         var replyToMessage = agent.getContext('getmymessages-yes-followup').parameters.messageTo
 
         var messageBody = param.contentBody;
@@ -435,6 +444,9 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
     function sendMessage(agent){
         agent.clearContext('paper');
+        if(agent.getContext('user') === null){
+            return agent.add('User Session Ended')
+        }
         var user = agent.getContext('user').parameters;
         var sendTo = param.sendTo;
         var recipient = {};
@@ -482,7 +494,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         delete data['sendTo']
         console.log(data)
         messageDB.push(data)
-        return agent.add('Ok, message sent.')
+        return agent.add('Ok, message sent. what would you like to do now?')
     }
 
     function getFeedback(agent){
@@ -490,6 +502,9 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         agent.clearContext('sendmessage-followup')
         agent.clearContext('getmymessages-yes-followup')
 
+        if(agent.getContext('user') === null){
+            return agent.add('User Session Ended')
+        }
         const user = agent.getContext('user').parameters;
         return getUserFeedback(user.key).then(feedbackList => {
             var speech
@@ -604,6 +619,9 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
     //for updating the topic scores
     function updateTopicScore(currentQuestion){
+        if(agent.getContext('user') === null){
+            return agent.add('User Session Ended')
+        }
         var user = agent.getContext('user').parameters;
         var topic = currentQuestion.topic;
         var newScore;
