@@ -97,15 +97,15 @@ function gernerateNewPaper(userId,papername){
             for(let i = 0; i<topicRatioCount.length; i++){
                 if(topicRatioCount[i] >= highRatio){
                     if(goodTeirTopic.includes(topicRatioKey[i])){//high, good: decrease x2
-                        newPaperRatio[topicRatioKey[i]] = lastPaperRatio[topicRatioKey[i]] - topicScoreSD
+                        newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] - topicScoreSD)
                     }else if(midTeirTopic.includes(topicRatioKey[i])){//high, mid:  decrease or remain
                         var change = 0; 
                         (Math.random(1) === 0)? change = topicScoreSD: change = 0;
-                        newPaperRatio[topicRatioKey[i]] = lastPaperRatio[topicRatioKey[i]] - change
+                        newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] - change)
                     }else{//high, low:  remain or increase
                         var change = 0; 
                         (Math.random(1) === 0)? change = topicScoreSD: change = 0;
-                        newPaperRatio[topicRatioKey[i]] = lastPaperRatio[topicRatioKey[i]] + change
+                        newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] + change)
                     }
                     
                     
@@ -117,15 +117,15 @@ function gernerateNewPaper(userId,papername){
                     //mid, low:  remain or increase
                     
                     if(goodTeirTopic.includes(topicRatioKey[i])){//high, good: decrease x2
-                        newPaperRatio[topicRatioKey[i]] = lastPaperRatio[topicRatioKey[i]] - topicScoreSD/2
+                        newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] - topicScoreSD/2)
                     }else if(midTeirTopic.includes(topicRatioKey[i])){//high, mid:  decrease or remain
                         var change = 0; 
                         (Math.random(1) === 0)? change = topicScoreSD: change = 0;
-                        newPaperRatio[topicRatioKey[i]] = lastPaperRatio[topicRatioKey[i]] - change
+                        newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] - change)
                     }else{//high, low:  remain or increase
                         var change = 0; 
                         (Math.random(topicScoreSD) === 0)? change = topicScoreSD: change = 1;
-                        newPaperRatio[topicRatioKey[i]] = lastPaperRatio[topicRatioKey[i]] + change
+                        newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] + change)
                     }
                     
                 }else{
@@ -136,15 +136,15 @@ function gernerateNewPaper(userId,papername){
                     //low, low:  increase x2
                     
                     if(goodTeirTopic.includes(topicRatioKey[i])){//high, good: decrease x2
-                        newPaperRatio[topicRatioKey[i]] = lastPaperRatio[topicRatioKey[i]] - topicScoreSD/3
+                        newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] - topicScoreSD/3)
                     }else if(midTeirTopic.includes(topicRatioKey[i])){//high, mid:  decrease or remain
                         var change = 0; 
                         (Math.random(1) === 0)? change = topicScoreSD: change = 0;
-                        newPaperRatio[topicRatioKey[i]] = lastPaperRatio[topicRatioKey[i]] - change
+                        newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] - change)
                     }else{//high, low:  remain or increase
                         var change = 0; 
                         (Math.random(topicScoreSD + 1) === 0)? change = topicScoreSD: change = 2;
-                        newPaperRatio[topicRatioKey[i]] = lastPaperRatio[topicRatioKey[i]] + change
+                        newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] + change)
                     }
                     
                 }
@@ -175,7 +175,7 @@ function gernerateNewPaper(userId,papername){
                     }
                 }
             }
-            //console.log(newPaperRatio)
+            console.log(newPaperRatio)
             
             let questionBase = []
             //get questions from database seperated by topics
@@ -254,14 +254,14 @@ function gernerateNewPaper(userId,papername){
                     })
                 })
                 console.log(pushData)
-                firebase.database().ref('profile/'+userId+'/homework').push({
-                    status: "not completed",
-                    attempts: 0,
-                    name: papername,
-                    score: 0,
-                    totalScore: 100,
-                    questions: pushData
-                })
+                // firebase.database().ref('profile/'+userId+'/homework').push({
+                //     status: "not completed",
+                //     attempts: 0,
+                //     name: papername,
+                //     score: 0,
+                //     totalScore: 100,
+                //     questions: pushData
+                // })
                 
             })
         })

@@ -190,7 +190,11 @@
 						$('<div class="card mb-3 one"><div class="heading4 bg-dark text-white card-header">'+hwsnapshot.val().name+'<div class="score">'+hwsnapshot.val().score+'/'+ hwsnapshot.val().totalScore +'</div></div><div class="list-group" id="'+Uid+hwid+'">  </div></div></div>').prependTo('#details'+userkey);
 					}
 					hwsnapshot.child("questions").forEach(function(qnssnapshot){
-						$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="float-left pt-2 heading3 card-text">Reattempt <span class="badge badge-info badge-pill">'+(qnssnapshot.val().tryCount === '' ? 0 : qnssnapshot.val().tryCount)+'</span> times</p><span class="badge mt-2 badge-success  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></div>').appendTo('#'+Uid+hwid);
+						let color = 'success'
+						if(qnssnapshot.val().status === 'wrong'){
+							color = 'danger'
+						}
+						$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="float-left pt-2 heading3 card-text">Reattempt <span class="badge badge-info badge-pill">'+(qnssnapshot.val().tryCount === '' ? 0 : qnssnapshot.val().tryCount)+'</span> times</p><span class="badge mt-2 badge-'+color+'  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></div>').appendTo('#'+Uid+hwid);
 						questionDb = firebase.database().ref('question');
 						questionDb.once('value', getQues)
 						function getQues(question){

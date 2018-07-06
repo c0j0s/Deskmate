@@ -146,11 +146,13 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     function beginHomeworkSession(agent){
         agent.clearContext('getmymessages-followup')
         var paperName = param.paperName;
-        var speech = `Hang on, searching for paper ${paperName}.`;
+        var paperNum = param.paperNum;
+        paperName = paperName + ' ' + paperNum
+        var speech = `Hang on, searching for ${paperName}.`;
         return getPaper(agent, paperName).
         then(paperparam => {
             if(paperparam === false){       
-                return agent.add(speech + ` Sorry, I couldn't find paper ${paperName} . Please try again.`);
+                return agent.add(speech + ` Sorry, I couldn't find ${paperName} . Please try again.`);
             }else{
                 console.log('paper attempts: ' + paperparam.attempts)
                 if(paperparam.attempts === 0){
