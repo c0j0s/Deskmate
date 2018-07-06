@@ -52,7 +52,7 @@
 		  <div class="card-deck child">
 	  <div class="card bg-light mb-3 one text-center noBorder">
 		<p class="card-text">Student's level in class</p>
-		<canvas id="myChart" style="max-width: 1000px;"></canvas>
+		<canvas id="myChart" style="max-width: 1500px;"></canvas>
 		<div class="card-body">
 			<p class="card-text">This graph shows the comparison between the student individual score and the average score of all the students</p>
 		</div> 
@@ -143,8 +143,10 @@
 				labels: Object.keys(totalTopicscore),
 				datasets: [{
 					label: 'Individual score',
-					data: [score[0], score[1], score[2], score[3], score[4]],
+					data: [score[0], score[1], score[2], score[3], score[4], score[5],score[6]],
 					backgroundColor: [
+						'rgba(255, 99, 132, 0.2)',
+						'rgba(255, 99, 132, 0.2)',
 						'rgba(255, 99, 132, 0.2)',
 						'rgba(255, 99, 132, 0.2)',
 						'rgba(255, 99, 132, 0.2)',
@@ -153,6 +155,8 @@
 						'rgba(255, 99, 132, 0.2)'
 					],
 					borderColor: [
+						'rgba(255,99,132,1)',
+						'rgba(255,99,132,1)',
 						'rgba(255,99,132,1)',
 						'rgba(255,99,132,1)',
 						'rgba(255,99,132,1)',
@@ -171,9 +175,13 @@
 						'rgba(54, 162, 235, 0.2)',
 						'rgba(54, 162, 235, 0.2)',
 						'rgba(54, 162, 235, 0.2)',
+						'rgba(54, 162, 235, 0.2)',
+						'rgba(54, 162, 235, 0.2)',
 						'rgba(54, 162, 235, 0.2)'
 					],
 					borderColor: [
+						'rgba(54, 162, 235, 1)',
+						'rgba(54, 162, 235, 1)',
 						'rgba(54, 162, 235, 1)',
 						'rgba(54, 162, 235, 1)',
 						'rgba(54, 162, 235, 1)',
@@ -197,11 +205,11 @@
 	}
 	function graph2(){
 	var data = {
-		labels: [topic[0], topic[1], topic[2], topic[3], topic[4]],
+		labels: [topic[0], topic[1], topic[2], topic[3], topic[4], topic[5], topic[6]],
 				datasets: [
 					{
 						label: "Individual progress",
-						data: [score[0], score[1], score[2], score[3], score[4]],
+						data: [score[0], score[1], score[2], score[3], score[4], score[5], score[6]],
 						backgroundColor: 'rgba(102, 153, 255,0.2)',
 						borderColor: 'rgba(102, 153, 255,1)'
 					}
