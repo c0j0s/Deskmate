@@ -76,7 +76,7 @@
 		</div>
 	</footer>
 	<script>
-		gernerateNewPaper()
+		
 		var studentProfileDb = firebase.database().ref('profile');
 		studentProfileDb.once('value', getData)
 		var questionDb;
@@ -109,52 +109,53 @@
 		}
 		function writetoDB(){
 			papername = document.getElementById('pName').value;
-			for (var c = 0; c < 5; c++){
-				randomvalue = a[Math.floor(Math.random() * a.length)];
-				index = a.indexOf(randomvalue);
-				ranques.push(randomvalue);
-				a.splice(index,1);
-			}
-			firebase.database().ref('profile/'+ids+'/homework').push({
-				status: "not completed",
-				attempts: 0,
-				name: papername,
-				score: 0,
-				totalScore: 100,
-				questions:{
-					0:{
-						id:ranques[0],
-						status:"",
-						stuAns:"",
-						tryCount:""
-					},
-					1:{
-						id:ranques[1],
-						status:"",
-						stuAns:"",
-						tryCount:""
-					},
-					2:{
-						id:ranques[2],
-						status:"",
-						stuAns:"",
-						tryCount:""
-					},
-					3:{
-						id:ranques[3],
-						status:"",
-						stuAns:"",
-						tryCount:""
-					},
-					4:{
-						id:ranques[4],
-						status:"",
-						stuAns:"",
-						tryCount:""
-					}
-				}
+			gernerateNewPaper(ids,papername)
+			// for (var c = 0; c < 5; c++){
+			// 	randomvalue = a[Math.floor(Math.random() * a.length)];
+			// 	index = a.indexOf(randomvalue);
+			// 	ranques.push(randomvalue);
+			// 	a.splice(index,1);
+			// }
+			// firebase.database().ref('profile/'+ids+'/homework').push({
+			// 	status: "not completed",
+			// 	attempts: 0,
+			// 	name: papername,
+			// 	score: 0,
+			// 	totalScore: 100,
+			// 	questions:{
+			// 		0:{
+			// 			id:ranques[0],
+			// 			status:"",
+			// 			stuAns:"",
+			// 			tryCount:""
+			// 		},
+			// 		1:{
+			// 			id:ranques[1],
+			// 			status:"",
+			// 			stuAns:"",
+			// 			tryCount:""
+			// 		},
+			// 		2:{
+			// 			id:ranques[2],
+			// 			status:"",
+			// 			stuAns:"",
+			// 			tryCount:""
+			// 		},
+			// 		3:{
+			// 			id:ranques[3],
+			// 			status:"",
+			// 			stuAns:"",
+			// 			tryCount:""
+			// 		},
+			// 		4:{
+			// 			id:ranques[4],
+			// 			status:"",
+			// 			stuAns:"",
+			// 			tryCount:""
+			// 		}
+			// 	}
 				
-			})
+			// })
 		}
 		function getData(data){
 			data.forEach(function(childSnapshot){
