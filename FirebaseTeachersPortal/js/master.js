@@ -87,7 +87,7 @@ function gernerateNewPaper(userId,papername){
             topicScoreSD = Math.floor(topicScoreSD)
             
             if(topicScoreSD < 0.6){
-                topicScoreSD = Math.random(2) 
+                topicScoreSD = 1 
             }
 
             let highRatio = Math.round(0.6 * paperQuestionCount)
@@ -143,7 +143,7 @@ function gernerateNewPaper(userId,papername){
                         newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] - change)
                     }else{//high, low:  remain or increase
                         var change = 0; 
-                        (Math.random(topicScoreSD + 1) === 0)? change = topicScoreSD: change = 2;
+                        (Math.random(topicScoreSD) <= 1)? change = 1: change = topicScoreSD;
                         newPaperRatio[topicRatioKey[i]] = Math.floor(lastPaperRatio[topicRatioKey[i]] + change)
                     }
                     
@@ -152,11 +152,20 @@ function gernerateNewPaper(userId,papername){
             }
             //check if new ratio exceed limit
             //console.log(newPaperRatio)
+
+
             let checkQuestionSum = Object.values(newPaperRatio)
             let total = checkQuestionSum.reduce(function(total, num){
                 return total + num;
             });
             let newPaperKeys = Object.keys(newPaperRatio)
+            let newPaperValue = Object.values(newPaperRatio)
+            for (let index = 0; index < newPaperKeys.length; index++) {
+                const element = newPaperValue[index];
+                if(element === 0){
+                    delete newPaperRatio[newPaperKeys[index]]
+                }
+            }
             let exceed = total - paperQuestionCount
             let max = Math.max.apply(Math,checkQuestionSum)
             while(total>paperQuestionCount){
@@ -175,6 +184,7 @@ function gernerateNewPaper(userId,papername){
                     }
                 }
             }
+            console.log(total)
             console.log(newPaperRatio)
             
             let questionBase = []
@@ -254,18 +264,107 @@ function gernerateNewPaper(userId,papername){
                     })
                 })
                 console.log(pushData)
-                // firebase.database().ref('profile/'+userId+'/homework').push({
-                //     status: "not completed",
-                //     attempts: 0,
-                //     name: papername,
-                //     score: 0,
-                //     totalScore: 100,
-                //     questions: pushData
-                // })
+                firebase.database().ref('profile/'+userId+'/homework').push({
+                    status: "not completed",
+                    attempts: 0,
+                    name: papername,
+                    score: 0,
+                    totalScore: 100,
+                    questions: pushData
+                })
                 
             })
         })
         
+    })
+}
+
+function formQuestion(newPaperRatio){
+    let questionBase = []
+    //get questions from database seperated by topics
+    questionDB.once('value', questions=>{
+        questions.forEach(question =>{
+            //filter and remove questions assigned before
+            if(!pastQuestionIds.includes(question.key)){
+                if(questionBase[question.val().topic] === undefined)
+                questionBase[question.val().topic] = []
+                
+                let finalQuestion = question.val()
+                finalQuestion.id = question.key
+                questionBase[question.val().topic].push(finalQuestion)
+            }
+        })
+        
+        let newPaperQuestion = []
+        let newPTKeys = Object.keys(newPaperRatio)
+        let newPTValues = Object.values(newPaperRatio)
+        for(let i = 0; i<newPTKeys.length;i++){
+            var currentSelection = questionBase[newPTKeys[i]]
+            if(currentSelection !== undefined){
+                for(let x = 0; x<newPTValues[i];x++){
+                    var index = Math.floor(Math.random()*currentSelection.length)
+                    var randomItem = currentSelection[index]
+                    newPaperQuestion.push(randomItem)
+                    currentSelection.splice(index,1)
+                    questionBase[newPTKeys[i]] = currentSelection
+                }
+                delete questionBase[newPTKeys[i]]
+            }
+        }
+        newPaperQuestion.forEach((item,index)=>{
+            if(item===undefined){
+                newPaperQuestion.splice(index,1)
+            }
+        })
+        //console.log(pastQuestionIds)
+        //console.log(questionBase)
+        //console.log(newPTKeys)
+        // console.log(newPTValues.length)
+        //console.log(questionBase)
+        //prepare questions
+        
+        //check if fulfill homework requirement
+        while(total < paperQuestionCount){
+            let short = paperQuestionCount - total
+            let remainTopics = Object.keys(questionBase)
+            for(let i = 0; i<short; i++){
+                var index = Math.floor(Math.random()*remainTopics.length)
+                var randomItem = remainTopics[index]
+                var currentSelection = questionBase[randomItem]
+                if(currentSelection !== undefined){
+                    //console.log(randomItem)
+                    var qindex = Math.floor(Math.random()*currentSelection.length)
+                    var randomQ = currentSelection[qindex]
+                    newPaperQuestion.push(randomQ)
+                    total++
+                    currentSelection.splice(index,1)
+                    questionBase[randomItem] = currentSelection
+                }else{
+                    i--
+                }
+            }
+        }
+        
+        console.log(newPaperQuestion)
+        var pushData = [];
+        newPaperQuestion.forEach(item=>{
+            
+            pushData.push({
+                'id': item.id,
+                status:"",
+                stuAns:"",
+                tryCount:""
+            })
+        })
+        console.log(pushData)
+        firebase.database().ref('profile/'+userId+'/homework').push({
+            status: "not completed",
+            attempts: 0,
+            name: papername,
+            score: 0,
+            totalScore: 100,
+            questions: pushData
+        })
     })
 }
 
