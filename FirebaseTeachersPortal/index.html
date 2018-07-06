@@ -194,7 +194,7 @@
 						if(qnssnapshot.val().status === 'wrong'){
 							color = 'danger'
 						}
-						$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p class="float-left pt-2 heading3 card-text">Reattempt <span class="badge badge-info badge-pill">'+(qnssnapshot.val().tryCount === '' ? 0 : qnssnapshot.val().tryCount)+'</span> times</p><span class="badge mt-2 badge-'+color+'  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></div>').appendTo('#'+Uid+hwid);
+						$('<div class="list-group-item" id="Q'+qnssnapshot.val().id+hwsnapshot.key+'"><p><p class="float-left pt-2 heading3 card-text">Reattempt <span class="badge badge-info badge-pill">'+(qnssnapshot.val().tryCount === '' ? 0 : qnssnapshot.val().tryCount)+'</span> times</p><span class="badge mt-2 badge-'+color+'  float-right badge-pill ">Ans: '+qnssnapshot.val().stuAns+'</span></p><p style="clear:both"><span id="QTL'+qnssnapshot.val().id+hwsnapshot.key+'" class="badge mt-2 badge-info badge-pill  "></span></p></div>').appendTo('#'+Uid+hwid);
 						questionDb = firebase.database().ref('question');
 						questionDb.once('value', getQues)
 						function getQues(question){
@@ -202,6 +202,7 @@
 								var qesid = quesSnapshot.key;
 								if( qesid === qnssnapshot.val().id){
 									$('<p class="heading3 card-text" data-topic="'+ quesSnapshot.val().topic +'">'+ (qindex) + ") " + quesSnapshot.val().question+'</p>').prependTo('#Q'+ qnssnapshot.val().id+hwsnapshot.key);
+									$('#QTL'+ qnssnapshot.val().id+hwsnapshot.key).html(quesSnapshot.val().topic)
 									$("#"+userkey).on('click',function() {
 										if(curruser == $(this).data("user")){
 											qnsid.push(qesid);
