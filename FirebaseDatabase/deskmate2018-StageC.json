@@ -1,0 +1,647 @@
+{
+  "feedback" : {
+    "0000000000" : {
+      "datetime" : "2018-06-21T03:16:55.192Z",
+      "feedback" : "test",
+      "read" : "tommy tan needs more practice on his science paper",
+      "sId" : "0001",
+      "tId" : "T001",
+      "teacherName" : "Mr ken"
+    }
+  },
+  "messages" : {
+    "-LFGGKTxXzKPcioJiDxm" : {
+      "datetime" : "2018-06-18T05:01:52.695Z",
+      "from" : "0002",
+      "message" : "can i meet you on monday, i have something to ask",
+      "read" : false,
+      "recipientName" : "mr ben",
+      "replyTo" : "",
+      "senderName" : "John Lim",
+      "to" : "T001"
+    },
+    "-LFGGRjmfCOrobeZKIz4" : {
+      "datetime" : "2018-06-18T05:02:26.566Z",
+      "from" : "T001",
+      "message" : "Can you come to my office on Monday?",
+      "read" : false,
+      "recipientName" : "John Lim",
+      "replyTo" : "-LFGGKTxXzKPcioJiDxm",
+      "senderName" : "mr ben",
+      "to" : "0002"
+    }
+  },
+  "profile" : {
+    "0001" : {
+      "age" : 8,
+      "homework" : {
+        "1" : {
+          "attempts" : 2,
+          "avgDiff" : 5,
+          "datetimeCompleted" : "2018-07-06T11:32:46.495Z",
+          "name" : "Science Paper 1",
+          "questions" : [ {
+            "id" : "0001",
+            "status" : "correct",
+            "stuAns" : "C",
+            "tryCount" : 2
+          }, {
+            "id" : "0022",
+            "status" : "correct",
+            "stuAns" : "D",
+            "tryCount" : 0
+          }, {
+            "id" : "0002",
+            "status" : "correct",
+            "stuAns" : "C",
+            "tryCount" : 1
+          }, {
+            "id" : "0008",
+            "status" : "correct",
+            "stuAns" : "A",
+            "tryCount" : 0
+          }, {
+            "id" : "0010",
+            "status" : "correct",
+            "stuAns" : "A",
+            "tryCount" : 0
+          } ],
+          "score" : 60,
+          "sessionStats" : {
+            "duration" : 49864,
+            "endTime" : "2018-07-06T11:32:46.458Z",
+            "startTime" : "2018-07-06T11:31:56.594Z"
+          },
+          "status" : "completed",
+          "totalScore" : 100
+        },
+        "-LGiGmQ6seen09FbfwEf" : {
+          "attempts" : 1,
+          "datetimeCompleted" : "2018-07-06T09:15:52.904Z",
+          "name" : "Science Paper 2",
+          "questions" : [ {
+            "id" : "0013",
+            "status" : "correct",
+            "stuAns" : "A",
+            "tryCount" : 1
+          }, {
+            "id" : "0003",
+            "status" : "correct",
+            "stuAns" : "B",
+            "tryCount" : 0
+          }, {
+            "id" : "0017",
+            "status" : "correct",
+            "stuAns" : "B",
+            "tryCount" : 2
+          }, {
+            "id" : "0016",
+            "status" : "correct",
+            "stuAns" : "D",
+            "tryCount" : 0
+          }, {
+            "id" : "0034",
+            "status" : "correct",
+            "stuAns" : "A",
+            "tryCount" : 1
+          } ],
+          "score" : 60,
+          "sessionStats" : {
+            "duration" : 97596,
+            "endTime" : "2018-07-06T09:15:52.902Z",
+            "startTime" : "2018-07-06T09:14:15.306Z"
+          },
+          "status" : "completed",
+          "totalScore" : 100
+        }
+      },
+      "name" : "Tommy Tan",
+      "stage" : 3,
+      "studentAbility" : {
+        "handTouch" : true,
+        "hearing" : true,
+        "selfMove" : true,
+        "sight" : true,
+        "speak" : true
+      },
+      "studyArea" : {
+        "home" : true,
+        "school" : true
+      },
+      "teacherList" : {
+        "000000000" : {
+          "class" : "3A",
+          "name" : "ben",
+          "sal" : "mr",
+          "stage" : 3,
+          "subject" : "science",
+          "tId" : "T001"
+        }
+      },
+      "topicScore" : {
+        "energy" : 1,
+        "heat" : 2,
+        "light" : 3,
+        "living things" : 9,
+        "magnets" : 6,
+        "matter" : 3,
+        "non-living things" : 8,
+        "systems" : 4
+      }
+    },
+    "0002" : {
+      "age" : 9,
+      "homework" : {
+        "1" : {
+          "attempts" : 0,
+          "avgDiff" : 5,
+          "datetimeCompleted" : " ",
+          "name" : "Science quiz 1",
+          "questions" : [ {
+            "id" : "0028",
+            "status" : " ",
+            "stuAns" : " ",
+            "tryCount" : 0
+          }, {
+            "id" : "0029",
+            "status" : " ",
+            "stuAns" : " ",
+            "tryCount" : 0
+          }, {
+            "id" : "0026",
+            "status" : " ",
+            "stuAns" : " ",
+            "tryCount" : 0
+          }, {
+            "id" : "0023",
+            "status" : " ",
+            "stuAns" : " ",
+            "tryCount" : 0
+          }, {
+            "id" : "0016",
+            "status" : " ",
+            "stuAns" : " ",
+            "tryCount" : 0
+          } ],
+          "score" : 0,
+          "status" : "completed",
+          "totalScore" : 100
+        },
+        "-LGkO4aAzCOKN66BqB0r" : {
+          "attempts" : 0,
+          "name" : "Science Paper 1",
+          "questions" : [ {
+            "id" : "0020",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0019",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0030",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0021",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          }, {
+            "id" : "0035",
+            "status" : "",
+            "stuAns" : "",
+            "tryCount" : ""
+          } ],
+          "score" : 0,
+          "status" : "not completed",
+          "totalScore" : 100
+        }
+      },
+      "name" : "John Lim",
+      "stage" : 4,
+      "studyArea" : {
+        "home" : true,
+        "school" : false
+      },
+      "teacherList" : {
+        "000000000" : {
+          "class" : "3A",
+          "name" : "ben",
+          "sal" : "mr",
+          "stage" : 3,
+          "subject" : "science",
+          "tId" : "T001"
+        }
+      },
+      "topicScore" : {
+        "energy" : 2,
+        "heat" : 3,
+        "light" : 1,
+        "living things" : 3,
+        "magnets" : 4,
+        "matter" : 0,
+        "non-living things" : 2,
+        "systems" : 2
+      }
+    }
+  },
+  "question" : {
+    "0001" : {
+      "a" : "Both reproduces by spores",
+      "answer" : "c",
+      "b" : "Both make their own food",
+      "c" : "Both can be useful or harmful to us",
+      "d" : "Both cannot be seen under microscope",
+      "difficulty" : 5,
+      "marks" : 20,
+      "question" : "Which of the following is true about both fungi and bacteria?",
+      "theme" : "diversity",
+      "topic" : "living things"
+    },
+    "0002" : {
+      "a" : "Fungi can reproduce",
+      "answer" : "c",
+      "b" : "Not all fungi can be seen without microscopes",
+      "c" : "Fungi can move from place to place on its own",
+      "d" : "Fungi feeds on other living things, which may be dead or alive",
+      "difficulty" : 5,
+      "marks" : 20,
+      "question" : "Which of the following is false about fungi?",
+      "topic" : "living things"
+    },
+    "0003" : {
+      "a" : "All bacteria are harmful to man",
+      "answer" : "c",
+      "b" : "Bacteria can make their own food.",
+      "c" : "Bacteria can be found everywhere",
+      "d" : "Bacteria can be seen with naked eye",
+      "difficulty" : 5,
+      "marks" : 20,
+      "question" : "Which of the following is false about bacteria?",
+      "topic" : "living things"
+    },
+    "0004" : {
+      "a" : "a bird lays eggs in a nest",
+      "answer" : "a",
+      "b" : "a snail hides itself in the shell when touch",
+      "c" : "a dog barks when a stranger approaches it",
+      "d" : "a plant grows toward the direction of the sunlight",
+      "difficulty" : 5,
+      "marks" : 20,
+      "question" : "which of the following is not an example of a living thing responding to changes around them?",
+      "topic" : "living things"
+    },
+    "0005" : {
+      "a" : "They are both aquatic plants",
+      "answer" : "c",
+      "b" : "They both can make their own food",
+      "c" : "They can reproduce by spores",
+      "d" : "They have seed leaves",
+      "difficulty" : 6,
+      "marks" : 20,
+      "question" : "What is the similarity between a mushroom and a bird's nest fern",
+      "topic" : "living things"
+    },
+    "0006" : {
+      "a" : "torchlight",
+      "answer" : "c",
+      "b" : "mirror",
+      "c" : "candle flame",
+      "d" : "moon",
+      "difficulty" : 1,
+      "marks" : 20,
+      "question" : "which of the following is a source of light?",
+      "topic" : "light"
+    },
+    "0007" : {
+      "a" : "All bacteria are harmful",
+      "answer" : "a",
+      "b" : "Yeast can be used to make beer",
+      "c" : "  Yeast and bacteria are micro-organism",
+      "d" : "Bacteria can reproduce by cell division",
+      "difficulty" : 8,
+      "marks" : 20,
+      "question" : "Which of the following statement is false?",
+      "topic" : "living things"
+    },
+    "0008" : {
+      "a" : "Electromagnet",
+      "answer" : "a",
+      "b" : "Magnetism Rock",
+      "c" : "Lodestone",
+      "d" : "Electricmagnet",
+      "difficulty" : 7,
+      "marks" : 20,
+      "question" : "A magnet is also known as",
+      "topic" : "magnets"
+    },
+    "0009" : {
+      "a" : "A seed is not a living thing and it cannot move",
+      "answer" : "b",
+      "b" : "A seed is a living thing and can grow into seedling",
+      "c" : " A seed died when the fruit is eaten by animals",
+      "d" : "A seed can make its own food",
+      "difficulty" : 4,
+      "marks" : 20,
+      "question" : "based on the chart above, which of the following correctly represents living thing P?",
+      "topic" : "living things"
+    },
+    "0010" : {
+      "a" : "respiratory system",
+      "answer" : "a",
+      "b" : "endocrine system",
+      "c" : "excretory system",
+      "d" : "circulatory system",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "What human organ system is responsible for exchanging gases with the outside environment?",
+      "topic" : "systems"
+    },
+    "0011" : {
+      "a" : "All plants can be eaten.",
+      "answer" : "c",
+      "b" : "All plants grow from seeds",
+      "c" : "All plants grow and reproduce",
+      "d" : "All plants produce flowers and fruits",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "which of the following statement about plants is correct?",
+      "topic" : "living things"
+    },
+    "0012" : {
+      "a" : "Smell and sight",
+      "answer" : "c",
+      "b" : "Sight and touch",
+      "c" : "Sight and hearing",
+      "d" : "Smell and hearing",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Alice was at a park and noticed that there were birds chirping nearby and the park was very crowded. Which of the following senses were Alice using?",
+      "topic" : "living things"
+    },
+    "0013" : {
+      "a" : "Strength",
+      "answer" : "a",
+      "b" : "Flexibility",
+      "c" : "Transparency",
+      "d" : "Ability to float or sink",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Alan needs a bag to carry heavy items for an outdoor camp. Which one of the following properties should he consider when choosing a suitable material to make this bag?",
+      "topic" : "non-living things"
+    },
+    "0014" : {
+      "a" : "They do not bear flowers",
+      "answer" : "c",
+      "b" : "They are found only in water",
+      "c" : "They do not need air, food and water",
+      "d" : "They feed on dead animals and plants",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "which of the following statements about ferns and mosses is correct?",
+      "topic" : "living things"
+    },
+    "0015" : {
+      "a" : "Bacteria and moss",
+      "answer" : "c",
+      "b" : "Bacteria and yeast",
+      "c" : "Mould and toadstool",
+      "d" : "Mould and bracket fungus",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Which of the following pairs of living things are micro-organisms?",
+      "topic" : "living things"
+    },
+    "0016" : {
+      "a" : "Copper is a magnetic material",
+      "answer" : "a",
+      "b" : "Copper can float on water",
+      "c" : "Copper is water proof",
+      "d" : "Copper is fragile",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "which of the characteristic of a copper is true?",
+      "topic" : "non-living things"
+    },
+    "0017" : {
+      "a" : "Muscular System",
+      "answer" : "a",
+      "b" : "Digestive System",
+      "c" : "Circulatory System",
+      "d" : "Respiratory System",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Which of the following body systems work directly together with the Skeletal system to enable a human to sit on the floor?",
+      "topic" : "systems"
+    },
+    "0018" : {
+      "a" : "mouth, gullet and small intestine",
+      "answer" : "c",
+      "b" : "stomach, small instestine and anus",
+      "c" : "mouth, stomach and small intestine",
+      "d" : "stomach, small intestine and large intestine",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "which of the following organs of the digestive system are involved in breaking down food into simple substances?",
+      "topic" : "systems"
+    },
+    "0019" : {
+      "a" : "Skeletal System",
+      "answer" : "d",
+      "b" : "Digestive System",
+      "c" : "Circulatory System",
+      "d" : "Respiratory System",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "A cigratte when lit, releases over 4000 toxic chemicals. These toxic chemicals are harmful to the human body. Which of human system will be directly affected when these toxic chemicals are breathed in?",
+      "topic" : "systems"
+    },
+    "0020" : {
+      "a" : "The material can float",
+      "answer" : "c",
+      "b" : "The material is flexible",
+      "c" : "The material is waterproof",
+      "d" : "The material is strong",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Zen would like to choose a material to make a shower curtian. Which property should she consider when choosing the material?",
+      "topic" : "non-living things"
+    },
+    "0021" : {
+      "a" : "mouth, lungs, gullet",
+      "answer" : "d",
+      "b" : "mouth, windpipe, heart",
+      "c" : "nose, lungs, heart",
+      "d" : "nose, windpipe, lungs",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Which of the following lists the correct parts of the respiratory system?",
+      "topic" : "systems"
+    },
+    "0022" : {
+      "a" : "Rubber bands and copper wire",
+      "answer" : "d",
+      "b" : "Rubber bands and sand",
+      "c" : "Iron fillings and steel pins",
+      "d" : "Sand and iron fillings",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Julliet wanted to separate two objects which have been mixed together. Which pair of objects can be separated using a magnet?",
+      "topic" : "magnets"
+    },
+    "0023" : {
+      "a" : "Hitting it repeatedly with a hammer",
+      "answer" : "d",
+      "b" : "Dropping it from a height repeatedly",
+      "c" : "Heating it over a flame for some time",
+      "d" : "Stroking it with a non-magnetic object",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Which of the following actions will not cause a magnet to lose its magnetism",
+      "topic" : "magnets"
+    },
+    "0024" : {
+      "a" : "steel bar",
+      "answer" : "a",
+      "b" : "plastic ruler",
+      "c" : "copper coin",
+      "d" : "aluminium pipe",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Rickie stroked some items with a magnet in one direction for several times. Which of the following items would most likely be magnetised?",
+      "topic" : "magnets"
+    },
+    "0025" : {
+      "a" : "Digestive juices are released.",
+      "answer" : "a",
+      "b" : "Food is mixed with the saliva.",
+      "c" : "Food is absorbed into the body.",
+      "d" : "Food is broken down into smaller pieces.",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Which of the following does not take place in the mouth?",
+      "topic" : "systems"
+    },
+    "0026" : {
+      "a" : "dragonfly",
+      "answer" : "b",
+      "b" : "star",
+      "c" : "moon",
+      "d" : "leaf",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "which of the following gives out light?",
+      "topic" : "light"
+    },
+    "0027" : {
+      "a" : "A paper plate",
+      "answer" : "b",
+      "b" : "A metal plate",
+      "c" : "A ceramic plate",
+      "d" : "A wooden plate",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Which of the following is the best conductor of heat?",
+      "topic" : "heat"
+    },
+    "0028" : {
+      "a" : "They can be seen",
+      "answer" : "b",
+      "b" : "They take up space",
+      "c" : "They have fixed shapes",
+      "d" : "They have fixed volumes",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Which of the following is true about both air and eraser",
+      "topic" : "matter"
+    },
+    "0029" : {
+      "a" : "the cup loses heat to the hot coffee",
+      "answer" : "d",
+      "b" : "the spoon loses heat to the hot coffee",
+      "c" : "the hot coffee gains heat from the spoon",
+      "d" : "the spoon gains heat from the hot coffee",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "pamela places a metal spoon in a cup of hot coffee. The spoon becomes hotter after a while. Which of the following explains this?",
+      "topic" : "heat"
+    },
+    "0030" : {
+      "a" : "it gives the body shape",
+      "answer" : "a",
+      "b" : "it allows the limbs to move freely",
+      "c" : "it brings oxygen around the body",
+      "d" : "it removes digested food from the body",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "what is the function of the skeletal system?",
+      "topic" : "systems"
+    },
+    "0031" : {
+      "a" : "the sun",
+      "answer" : "a",
+      "b" : "a candle flame",
+      "c" : "a lighted bulb",
+      "d" : "a wool sweater",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "Which of the following is NOT a source of heat?",
+      "topic" : "heat"
+    },
+    "0032" : {
+      "a" : "liquid only",
+      "answer" : "d",
+      "b" : "solid and gas only",
+      "c" : "solid and liquid only",
+      "d" : "gas, liquid and solid",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "mary placed an ice cube on a table and 5 minutes later she found a pool of water in the place of the ice cube. 3 hours later, she found that the table was dry even though it had not been wiped. during the experiment, what did the water existed as ?",
+      "topic" : "matter"
+    },
+    "0033" : {
+      "a" : "the spoon gains heat from the ice cube",
+      "answer" : "b",
+      "b" : "the ice cube gains heat from the spoon",
+      "c" : "the spoon loses haet to the candle flame",
+      "d" : "the ice cube loses heat to the surrounding air",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "david heated an ice over a candle as shown below. the ice melt after a while. which of the following statement explains why the ice melt?",
+      "topic" : "heat"
+    },
+    "0034" : {
+      "a" : "air",
+      "answer" : "d",
+      "b" : "soil",
+      "c" : "water",
+      "d" : "shadow",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "matter is anything that has mass and occupies space. which of the following is not matter ?",
+      "topic" : "matter"
+    },
+    "0035" : {
+      "a" : "air",
+      "answer" : "d",
+      "b" : "oil",
+      "c" : "stone",
+      "d" : "water",
+      "difficulty" : 3,
+      "marks" : 20,
+      "question" : "which of the following substances has fixed shape ?",
+      "topic" : "matter"
+    }
+  },
+  "teacher" : {
+    "T001" : {
+      "name" : "Ben",
+      "sal" : "Mr",
+      "sir" : "Liu"
+    }
+  }
+}
