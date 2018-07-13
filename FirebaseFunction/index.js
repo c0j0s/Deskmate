@@ -4,7 +4,8 @@
 BUGS:
 move on issue, question number resets after moving on
 */
-
+const natural = require('natural');
+const ObjValues = require('object.values');
 const {dialogflow} = require('actions-on-google');
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
@@ -48,6 +49,8 @@ const GET_FEEDBACK = 'Get Feedback'
 const READ_FEEDBACK_YES = 'Get Feedback - yes'
 
 const END_SESSION = 'End Session'
+
+const FAQ_SCHOOL = 'FAQ_SCHOOL - custom'
 
 const {WebhookClient} = require('dialogflow-fulfillment');
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
@@ -805,6 +808,150 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     }
     
     //============================================================================================================================================
+    // CXA Functions
+    //============================================================================================================================================
+
+    let faqDB = admin.database().ref('/faq');
+
+    function queryFaq(agent){
+        //clear context
+        clearContext(agent)
+
+        //get question
+        let keywords = param.keyword;
+        let newStr = []
+        console.log('queryFaq: ' + keywords)
+        keywords.forEach((text,index) => {
+            if(text.includes(' ')){
+                console.log("spliting: "+text.split(' '))
+                let arr = text.split(' ')
+                for(let x of arr){
+                    newStr.push(x)
+                }
+            }else{
+                newStr.push(text)
+            }
+        })
+        console.log('queryFaq: SPLIT: ' + newStr)
+
+        let result = {}
+        return faqDB.once('value', snap=>{
+            for(let kw of newStr){
+            //keywords.forEach(kw => {
+                console.log(kw)
+                snap.forEach(faq =>{
+                    if(!faq.val().answer === undefined || !faq.val().answer === ''){
+                        
+                    
+                    if(faq.val().tags !== undefined){
+                        if(ObjValues(faq.val().tags).toString().toLowerCase().includes(kw.toLowerCase())){
+                            if(result[faq.key] === undefined){
+                                result[faq.key] = {}
+                                result[faq.key].id = faq.key
+                                result[faq.key].answer = faq.val().answer
+                                result[faq.key].confident = 1
+                            }else{
+                                result[faq.key].confident++
+                            }
+                        }
+                    }
+                    if(faq.val().question !== undefined){
+                        if(faq.val().question.toLowerCase().includes(kw.toLowerCase())){ 
+                            if(result[faq.key] === undefined){
+                                    result[faq.key] = {}
+                                    result[faq.key].id = faq.key
+                                    result[faq.key].answer = faq.val().answer
+                                    result[faq.key].confident = 0.4
+                                }else{
+                                    result[faq.key].confident =+ 0.4
+                            }
+                        }else{
+                            if(result[faq.key] === undefined){
+                                result[faq.key] = {}
+                                result[faq.key].id = faq.key
+                                result[faq.key].answer = faq.val().answer
+                                result[faq.key].confident = 0
+                            }else{
+                                result[faq.key].confident =- 0.1
+                        }
+                        }
+                    }
+                    if(faq.val().answer !== undefined){
+                        if(faq.val().answer.toLowerCase().includes(kw.toLowerCase())){
+                            if(result[faq.key] === undefined){
+                                result[faq.key] = {}
+                                result[faq.key].id = faq.key
+                                result[faq.key].answer = faq.val().answer
+                                result[faq.key].confident = 0.1
+                            }else{
+                                result[faq.key].confident =+ 0.1
+                            }
+                        }
+                    }else{
+                        if(!result[faq.key] === undefined){
+                            delete result[faq.key]
+                        }
+                    }
+                    }
+                })
+            //})
+            
+        }
+            console.log(result)
+            let resultValues = ObjValues(result)
+            let max = 0;
+            let response = '';
+            resultValues.forEach(item =>{
+                if(item.confident > max){
+                    max = item.confident
+                    response = item.answer
+                }
+            })
+            if(response === ''){
+                response = 'Sorry, I dun have a answer for you question. I will continue my learning to provide better service next time.'
+                addNewFaq(agent,newStr)
+            }
+            console.log(response)
+            let conv = agent.conv();
+            //conv.ask(new Suggestions(`Not what I'm looking for.`))
+            conv.ask(response);
+            return agent.add(conv);
+        })
+    }
+
+    function faqNotFound(agent){
+        let conv = agent.conv();
+        conv.ask(`Ok, i'll feedback to the customer service team`);
+        agent.add(conv)
+    }
+    function addNewFaq(agent,tags){
+        let question = request.body.result.resolvedQuery
+        console.log(question)
+        var filterlist = ['i','for','the','should','is','are','shall','then']
+        tags = tags.filter(f => !filterlist.toLowerCase().includes(f.toLowerCase()));
+        console.log(tags)
+        let ftag = {}
+        tags.forEach((item,index)=>{
+            ftag[index] = {}
+            ftag[index] = item
+        })
+        console.log(ftag)
+        faqDB.push({
+            'question': question,
+            'tags': ftag
+        })
+    }
+
+    function clearContext(agent){
+        agent.clearContext("checkanswercontext")
+        agent.clearContext("paper")
+        agent.clearContext("currentquestion")
+        agent.clearContext("paperstats")
+        agent.clearContext("doingquestion")
+        agent.clearContext("checkstudentanswer-followup")
+    }
+
+    //============================================================================================================================================
     // INTENT FUNCTION MAPPING
     //============================================================================================================================================
 
@@ -836,6 +983,9 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     intentMap.set(READ_FEEDBACK_YES,readFeedback)
 
     intentMap.set(END_SESSION,endSession)
+
+    intentMap.set(FAQ_SCHOOL,queryFaq)
+    intentMap.set('FAQ_SCHOOL_NOT_FOUND',faqNotFound)
 
     agent.handleRequest(intentMap);
 });

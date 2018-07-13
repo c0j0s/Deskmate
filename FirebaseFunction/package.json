@@ -16,9 +16,11 @@
   },
   "dependencies": {
     "actions-on-google": "^2.0.0",
+    "dialogflow-fulfillment": "^0.4.1",
     "firebase-admin": "^5.12.1",
     "firebase-functions": "^1.0.4",
-    "dialogflow-fulfillment": "^0.4.1"
+    "natural": "^0.6.1",
+    "object.values": "^1.0.4"
   },
   "private": true,
   "devDependencies": {
