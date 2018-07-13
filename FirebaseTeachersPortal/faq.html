@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Welcome to Teachers portal</title>
+	<link rel="stylesheet" type = "text/css" href="css/bootstrap-grid.css">
+	<link rel="stylesheet" type = "text/css" href="css/bootstrap-reboot.css">
+	<link rel="stylesheet" type = "text/css" href="css/bootstrap.css">
+	<link rel="stylesheet" type = "text/css" href="css/styling.css">
+	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+	<script src="js/jquery.js"></script>
+	<script src="js/bootstrap.js"></script>
+	<script src="js/master.js"></script>
+</head>
+<body>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<div class="container">
+			<a class="navbar-brand" href="https://deskmate2018.firebaseapp.com/">
+				<img src="https://firebasestorage.googleapis.com/v0/b/deskmate2018.appspot.com/o/ic_launcher.png?alt=media&token=fa090ccd-e14e-4099-b3b7-cf874a035ad6"/>
+				Deskmate
+			</a>
+			<div class="" id="navbarNav collapse navbar-collapse">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item">
+						<a class="nav-link" href="index.html">
+							Home
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="message.html">
+							Messages
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link active" href="faq.html">
+							faq
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container content">
+		<h2 id="heading1">
+			FAQ
+		</h2>
+		<div id="Nil">
+			<div class= "card bg-light mb-3">
+				<div class="card-body">
+					There is currently no question
+				</div>
+			</div>
+		</div>
+		
+		<div id="data"></div>
+
+	</div>
+	
+	<footer class="container-fluid bg-light mt-5">
+		<div class="container text-center p-3">
+			@Copyright Deskmate 2018 
+		</div>
+	</footer>
+	<script>
+		var faqDb = firebase.database().ref('faq');
+		faqDb.once('value', getFaq)
+		
+		function getFaq(data){
+			data.forEach(function(faqsnapshot){
+			console.log($('#data').html());
+				if(faqsnapshot.val().answer === undefined){
+					$('#Nil').empty();
+					console.log(faqsnapshot.val().question);
+					$('<div class= "card bg-light mb-3"><div class="card-body"><div id="heading2">'+faqsnapshot.val().question+'</div><br>Answer: <input type="text" name="ans" id="Ans"></input><br><br>Tags:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="tag" id="Tag" placeholder="school, curriculum etc."></input><br><button data-id="'+faqsnapshot.key+'" class="btn call" type="submit" onclick="addData(this)">submit</button><button data-id="'+faqsnapshot.key+'" class="btn call mr-2" type="submit" onclick="deleteData(this)">delete</button></div></div>').appendTo('#data');
+				}
+				else if($('#data').is(':empty')){
+					$('#Nil').empty();
+					console.log("answered");
+					$('<div class= "card bg-light mb-3"><div class="card-body">There is currently no question</div></div>').appendTo('#Nil');
+				}
+				else if($('#data').html()){
+					$('#Nil').empty();
+				}
+				
+			})
+		}
+		
+		var ans;
+		var tag = [];
+		var qid;
+		var tags={};
+		var dqnsid;
+		function addData(id){
+			qid = $(id).data("id");
+			ans = document.getElementById('Ans').value;
+			tags = document.getElementById('Tag').value.split(", ");
+			console.log(ans);
+			console.log(tags);
+			console.log($(id).data("id"));
+			console.log("faq/"+qid);
+			for(var i = 0; i< tag.length; i++){
+				tags[i] = tag[i]
+			}
+			firebase.database().ref('faq/'+qid).update({
+				answer: ans,
+				tags
+			})
+			location.reload();
+		}
+		function deleteData(id){
+			dqnsid = $(id).data("id");
+			firebase.database().ref('faq/'+dqnsid).remove();
+			location.reload();
+		}
+	</script>
+</body>
+</html>
