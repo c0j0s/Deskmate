@@ -1,5 +1,5 @@
 # Deskmate
-This is a project for Splash Award 2018
+This is a project for CodeXtreme Apps 2018
 
 # Project Folder Structure
 /Architecture diagram
