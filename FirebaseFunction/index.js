@@ -939,6 +939,8 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         if(response === ''){
             response = 'Sorry, I dun have a answer for you question. I will continue my learning to provide better service next time.'
             addNewFaq(agent,newStr)
+        }else if(response === undefined){
+            response = 'Sorry, I dun have a answer for you question right now.'
         }
         console.log(response)
         let conv = agent.conv();
@@ -972,6 +974,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     }
 
     function clearContext(agent){
+        agent.clearContext("faq_school-followup")
         agent.clearContext("checkanswercontext")
         agent.clearContext("paper")
         agent.clearContext("currentquestion")
