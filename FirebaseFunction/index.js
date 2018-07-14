@@ -833,15 +833,16 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             }
         })
         console.log('queryFaq: SPLIT: ' + newStr)
-
+        let max = 0;
+        let maxCount = 0;
+        let response = '';
         let result = {}
+        let highConfidenceAnswer = []
         return faqDB.once('value', snap=>{
             for(let kw of newStr){
             //keywords.forEach(kw => {
                 console.log(kw)
                 snap.forEach(faq =>{
-                    if(!faq.val().answer === undefined || !faq.val().answer === ''){
-                        
                     
                     if(faq.val().tags !== undefined){
                         if(ObjValues(faq.val().tags).toString().toLowerCase().includes(kw.toLowerCase())){
@@ -870,7 +871,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                                 result[faq.key] = {}
                                 result[faq.key].id = faq.key
                                 result[faq.key].answer = faq.val().answer
-                                result[faq.key].confident = 0
+                                result[faq.key].confident = -0.1
                             }else{
                                 result[faq.key].confident =- 0.1
                         }
@@ -892,43 +893,71 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                             delete result[faq.key]
                         }
                     }
-                    }
+                    
+                    // if(result[faq.key] !== undefined){
+                    //     if(result[faq.key].confident > max){
+                    //         highConfidenceAnswer = []
+                    //         max = result[faq.key].confident
+                    //         maxCount = 1
+                    //         response = result[faq.key].answer
+                    //         highConfidenceAnswer.push(result[faq.key])
+                    //     }else if(result[faq.key].confident === max){
+                    //         highConfidenceAnswer.push(result[faq.key])
+                    //         maxCount++
+                    //     }
+                    // }
+
+                    
                 })
             //})
             
         }
-            console.log(result)
-            let resultValues = ObjValues(result)
-            let max = 0;
-            let response = '';
+        // console.log('highCount:' + highConfidenceAnswer.length)
+        // if(highConfidenceAnswer.length > 1){
+        //     max = 0
+        //     highConfidenceAnswer.forEach(faq=>{
+        //         if(faq.answer.toLowerCase().includes(newStr)){
+        //             highConfidenceAnswer.confident =+ 2
+        //         }
+        //         if(highConfidenceAnswer.confident > max){
+        //             max = highConfidenceAnswer.confident
+        //             response = highConfidenceAnswer.answer
+        //         }
+        //     })
+        //     console.log(highConfidenceAnswer)
+        // }
+        // console.log('maxCount:' + maxCount)
+        let resultValues = ObjValues(result)
             resultValues.forEach(item =>{
                 if(item.confident > max){
                     max = item.confident
                     response = item.answer
                 }
             })
-            if(response === ''){
-                response = 'Sorry, I dun have a answer for you question. I will continue my learning to provide better service next time.'
-                addNewFaq(agent,newStr)
-            }
-            console.log(response)
-            let conv = agent.conv();
-            //conv.ask(new Suggestions(`Not what I'm looking for.`))
-            conv.ask(response);
-            return agent.add(conv);
+        console.log(result)
+
+        if(response === ''){
+            response = 'Sorry, I dun have a answer for you question. I will continue my learning to provide better service next time.'
+            addNewFaq(agent,newStr)
+        }
+        console.log(response)
+        let conv = agent.conv();
+        //conv.ask(new Suggestions(`Not what I'm looking for.`))
+        conv.ask(response);
+        return agent.add(conv);
         })
-    }
+    }  
 
     function faqNotFound(agent){
         let conv = agent.conv();
-        conv.ask(`Ok, i'll feedback to the customer service team`);
+        conv.ask(`Ok, i'll feedback this answer to the customer service team`);
         agent.add(conv)
     }
     function addNewFaq(agent,tags){
         let question = request.body.result.resolvedQuery
         console.log(question)
         var filterlist = ['i','for','the','should','is','are','shall','then']
-        tags = tags.filter(f => !filterlist.toLowerCase().includes(f.toLowerCase()));
+        tags = tags.filter(f => !filterlist.includes(f));
         console.log(tags)
         let ftag = {}
         tags.forEach((item,index)=>{
